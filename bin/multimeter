@@ -2,12 +2,10 @@
 
 const ScreepsAPI = require('screeps-api')
 const blessed = require('blessed');
-const printf = require('printf');
-const text_prompt = require('../src/text_prompt');
-const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 const homedir = require('homedir');
+const MainView = require('../src/main_view');
 
 function load_config() {
   let home = homedir();
@@ -26,96 +24,9 @@ function load_config() {
 
 const config = load_config();
 
-const MOTD = "Now showing Screeps console. Press escape to quit.";
+const MOTD = "Now showing Screeps console. Type /help for help.";
 
-const commands = {
-  'quit': () => process.exit(0),
-  'help': () => addLines('system', "Allowed commands: " + Object.keys(commands).map(c => "/" + c).join("  ")),
-}
-
-let cpu_limit = 1, memory_limit = 2097152;
-
-let screen = blessed.screen({
-  smartCSR: true,
-});
-
-screen.title = "Screeps";
-
-let content = blessed.log({
-  parent: screen,
-  top: 1,
-  left: 0,
-  width: screen.width,
-  height: screen.height - 2,
-  scrollback: 5000,
-  tags: true,
-});
-
-let prompt = new text_prompt({
-  parent: screen,
-  top: screen.height - 1,
-  left: 0,
-  width: screen.width,
-  height: 1,
-  inputOnFocus: true,
-  completer: completion,
-  prompt: "<<< ",
-  style: { inverse: true },
-});
-
-let top_bar = blessed.box({
-  parent: screen,
-  top: 0,
-  left: 0,
-  width: screen.width,
-  height: 1,
-  style: { inverse: true },
-});
-
-let cpu_label = blessed.text({
-  parent: top_bar,
-  top: 0,
-  left: 0,
-  height: 1,
-  width: 12,
-  content: "CPU:    /   ",
-  style: { inverse: true },
-});
-
-let cpu_bar = blessed.progressbar({
-  parent: top_bar,
-  top: 0,
-  height: 1,
-  left: cpu_label.width + 1,
-  right: screen.width / 2 - 1,
-  pch: '|',
-  bch: ' ',
-  style: { inverse: true, bar: { inverse: true } },
-});
-
-let mem_label = blessed.text({
-  parent: top_bar,
-  top: 0,
-  left: screen.width / 2,
-  height: 1,
-  width: 16,
-  content: "Mem:     K/    K",
-  style: { inverse: true },
-});
-
-let mem_bar = blessed.progressbar({
-  parent: top_bar,
-  top: 0,
-  height: 1,
-  left: mem_label.left + mem_label.width + 1,
-  right: screen.width - 1,
-  pch: '|',
-  bch: ' ',
-  style: { inverse: true, bar: { inverse: true } },
-});
-
-console.log("Connecting to console...");
-let api = new ScreepsAPI();
+console.log("Connecting to Screens...");
 Promise.resolve(connect())
   .then(start)
   .catch((ex) => {
@@ -126,122 +37,49 @@ Promise.resolve(connect())
 
 function connect() {
   return new Promise((resolve, reject) => {
+    let api = new ScreepsAPI();
     api.auth(config.email, config.password, (err, result) => {
       if (result) {
-        resolve();
+        resolve(api);
       } else {
-        console.log('Authentication failed')
+        console.error('Authentication failed')
         reject(err);
       }
     })
-  }).then(() => new Promise((resolve, reject) => {
+  }).then((api) => new Promise((resolve, reject) => {
     api.socket();
 
     api.on('message', (msg) => {
       if (msg.slice(0, 7) == 'auth ok') {
-        resolve();
+        resolve(api);
       }
     })
   }));
 }
 
-function start() {
+function start(api) {
   return new Promise((resolve, reject) => {
-    prompt.key('escape', (ch, key) => {
+    let screen = blessed.screen({
+      smartCSR: true,
+    });
+
+    screen.title = "Screeps";
+
+    let view = new MainView({
+      parent: screen,
+      top: 0,
+      left: 0,
+      width: screen.width,
+      height: screen.height,
+    });
+
+    view.on('exit', () => {
       screen.destroy();
       process.exit(0);
     });
 
-    prompt.key('pageup', (ch, key) => {
-      content.scroll(-content.height + 1);
-      screen.render();
-    });
-
-    prompt.key('pagedown', (ch, key) => {
-      content.scroll(content.height - 1);
-      screen.render();
-    });
-
-    prompt.key('C-c', (ch, key) => {
-      prompt.clearLine();
-      screen.render();
-    });
-
-    prompt.on('line', (command) => {
-      if (command[0] == '/') {
-        let prefix = command.slice(1, (command + ' ').indexOf(' '));
-        let func = commands[prefix];
-        if (func) {
-          func();
-        } else {
-          addLines('system', "Invalid command: " + prefix);
-        }
-      } else if (command.length > 0) {
-        addLines('console', command);
-        api.console(command);
-      }
-      screen.render();
-    });
-
-    screen.render();
-    prompt.focus();
-
-    api.subscribe('/console');
-    api.subscribe('/cpu');
-    api.on('console', (msg) => {
-      let [user, data] = msg;
-      if (data.messages) {
-        data.messages.log.forEach(l => addLines('log', l))
-        data.messages.results.forEach(l => addLines('result', l))
-      }
-      if (data.error) addLines('error', data.error);
-    });
-    api.on('message', (msg) => {
-      if (msg[0].slice(-4) == "/cpu") {
-        let cpu = msg[1].cpu, memory = msg[1].memory;
-        setGauges(cpu, cpu_limit, memory, memory_limit);
-      }
-    });
-
-    api.me((err, data) => {
-      cpu_limit = data.cpu;
-    });
-
-    addLines('system', MOTD);
+    view.setAPI(api);
+    view.focus();
+    view.log(MOTD);
   })
-}
-
-function setGauges(cpu_current, cpu_limit, mem_current, mem_limit) {
-  cpu_label.setContent(printf("CPU: %3d/%3d", cpu_current, cpu_limit));
-  cpu_bar.setProgress(cpu_current / cpu_limit * 100);
-  mem_label.setContent(printf("Mem: %4dK/%4dK", mem_current / 1024, mem_limit / 1024));
-  mem_bar.setProgress(mem_current / mem_limit * 100);
-  screen.render();
-}
-
-function addLines(type, line) {
-  line = line.split("\n").join("\n    ");
-  if (type == 'system') {
-    content.log('{bold}*** ' + blessed.helpers.escape(line) + '{/bold}');
-  } else if (type == 'console') {
-    content.log('<<< ' + blessed.helpers.escape(line));
-  } else if (type == 'result') {
-    content.log('>>> ' + blessed.helpers.escape(line));
-  } else if (type == 'error') {
-    content.log('{red-fg}{bold}!!!{/bold} ' + blessed.helpers.escape(line) + '{/}');
-  } else {
-    content.log('  - ' + blessed.helpers.escape(line));
-  }
-
-  screen.render();
-}
-
-function completion(line) {
-  if (line[0] == '/') {
-    let prefix = line.slice(1).toLowerCase();
-    let options = _.filter(Object.keys(commands), (k) => prefix == k.slice(0, prefix.length));
-    return [ options.map((l) => "/" + l), line ];
-  } else {
-    return [[], line];
-  }
 }

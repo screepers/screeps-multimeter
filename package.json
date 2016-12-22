@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "The most useful tool on your screeps workbench.",
   "main": "index.js",
+  "bin": {
+    "multimeter": "./bin/multimeter"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
