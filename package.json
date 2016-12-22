@@ -1,0 +1,29 @@
+{
+  "name": "screeps-multimeter",
+  "version": "1.0.0",
+  "description": "The most useful tool on your screeps workbench.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CGamesPlay/screeps-multimeter.git"
+  },
+  "keywords": [
+    "screeps"
+  ],
+  "author": "Ryan Patterson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CGamesPlay/screeps-multimeter/issues"
+  },
+  "homepage": "https://github.com/CGamesPlay/screeps-multimeter#readme",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "homedir": "^0.6.0",
+    "lodash": "^4.17.2",
+    "printf": "^0.2.5",
+    "screeps-api": "^0.2.8"
+  }
+}
