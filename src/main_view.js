@@ -131,6 +131,7 @@ module.exports = class MainView extends blessed.element {
 
     api.subscribe('/console');
     api.subscribe('/cpu');
+    api.subscribe('/code');
     api.on('console', (msg) => {
       let [user, data] = msg;
       if (data.messages) {
@@ -142,12 +143,16 @@ module.exports = class MainView extends blessed.element {
     api.on('message', (msg) => {
       if (msg[0].slice(-4) == "/cpu") {
         let cpu = msg[1].cpu, memory = msg[1].memory;
-        this.setGauges(cpu, this.cpuLimit, memory, this.memoryLimit);
+        this.setGauges(cpu, memory);
       }
+    });
+    api.on('code', (msg) => {
+      this.addLines('system', 'Code updated');
     });
 
     api.me((err, data) => {
       this.cpuLimit = data.cpu;
+      this.memLimit = 2097152;
     });
   }
 
