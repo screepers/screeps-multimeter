@@ -2,6 +2,7 @@ const blessed = require('blessed');
 const text_prompt = require('./text_prompt');
 const printf = require('printf');
 const _ = require('lodash');
+const Console = require('./console');
 
 module.exports = class MainView extends blessed.element {
   constructor(opts) {
@@ -11,29 +12,15 @@ module.exports = class MainView extends blessed.element {
     }
 
     this.commands = {};
-    this.addCommand("quit", "Exit the program. Same as pressing ESC.", this.commandQuit.bind(this));
+    this.addCommand("quit", "Exit the program.", this.commandQuit.bind(this));
     this.addCommand("help", "List the available commands.", this.commandHelp.bind(this));
 
-    this.logView = blessed.log({
+    this.console = new Console({
       parent: this,
       top: 1,
       left: 0,
       width: this.width,
-      height: this.height - 2,
-      scrollback: 5000,
-      tags: true,
-    });
-
-    this.prompt = new text_prompt({
-      parent: this,
-      top: this.height - 1,
-      left: 0,
-      width: this.width,
-      height: 1,
-      inputOnFocus: true,
-      completer: this.handleComplete.bind(this),
-      prompt: "<<< ",
-      style: { inverse: true },
+      height: this.height - 1,
     });
 
     this.topBar = blessed.box({
@@ -90,26 +77,7 @@ module.exports = class MainView extends blessed.element {
     this.cpuLimit = 1;
     this.memoryLimit = 2097152;
 
-    this.prompt.key('escape', (ch, key) => {
-      this.emit('exit');
-    });
-
-    this.prompt.key('pageup', (ch, key) => {
-      this.logView.scroll(-this.logView.height + 1);
-      screen.render();
-    });
-
-    this.prompt.key('pagedown', (ch, key) => {
-      this.logView.scroll(this.logView.height - 1);
-      screen.render();
-    });
-
-    this.prompt.key('C-c', (ch, key) => {
-      this.prompt.clearLine();
-      screen.render();
-    });
-
-    this.prompt.on('line', (command) => {
+    this.console.on('line', (command) => {
       if (command[0] == '/') {
         let args = command.slice(1).split(' ');
         let cmd = this.commands[args[0]];
@@ -119,7 +87,7 @@ module.exports = class MainView extends blessed.element {
           this.logSystem("Invalid command: " + prefix);
         }
       } else if (command.length > 0) {
-        this.addLines('console', command);
+        this.console.addLines('console', command);
         this.api.console(command);
       }
       this.screen.render();
@@ -135,10 +103,10 @@ module.exports = class MainView extends blessed.element {
     api.on('console', (msg) => {
       let [user, data] = msg;
       if (data.messages) {
-        data.messages.log.forEach(l => this.addLines('log', l))
-        data.messages.results.forEach(l => this.addLines('result', l))
+        data.messages.log.forEach(l => this.console.addLines('log', l))
+        data.messages.results.forEach(l => this.console.addLines('result', l))
       }
-      if (data.error) this.addLines('error', data.error);
+      if (data.error) this.console.addLines('error', data.error);
     });
     api.on('message', (msg) => {
       if (msg[0].slice(-4) == "/cpu") {
@@ -147,7 +115,7 @@ module.exports = class MainView extends blessed.element {
       }
     });
     api.on('code', (msg) => {
-      this.addLines('system', 'Code updated');
+      this.console.addLines('system', 'Code updated');
     });
 
     api.me((err, data) => {
@@ -171,7 +139,7 @@ module.exports = class MainView extends blessed.element {
   }
 
   focus() {
-    this.prompt.focus();
+    this.console.focus();
   }
 
   setGauges(cpu_current, mem_current) {
@@ -205,7 +173,7 @@ module.exports = class MainView extends blessed.element {
   }
 
   log(line) {
-    this.addLines('system', line);
+    this.console.addLines('system', line);
   }
 
   commandQuit() {
@@ -213,7 +181,7 @@ module.exports = class MainView extends blessed.element {
   }
 
   commandHelp() {
-    this.addLines('system', 'Available commands:\n' + _.map(this.commands, (cmd, key) => '/' + key + '\t' + cmd.description).join('\n'));
+    this.console.addLines('system', 'Available commands:\n' + _.map(this.commands, (cmd, key) => '/' + key + '\t' + cmd.description).join('\n'));
 
   }
 }

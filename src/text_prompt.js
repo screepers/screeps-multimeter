@@ -32,14 +32,12 @@ module.exports = class TextPrompt extends blessed.box {
     this.setContent(this.rl._prompt);
   }
 
-  clearLine() {
-    this.rl.clearLine();
-  }
-
   _updateCursor(get) {
     let { cols: cx, rows: cy } = this.rl._getCursorPos();
-    cx += this.left;
-    cy += this.top;
+    let pos = this._getPos();
+
+    cx += pos.aleft;
+    cy += pos.atop;
 
     if (cy === this.screen.program.y && cx === this.screen.program.x) {
       return;
