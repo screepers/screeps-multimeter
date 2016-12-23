@@ -6,37 +6,31 @@ const path = require('path');
 const fs = require('fs');
 const homedir = require('homedir');
 const MainView = require('../src/main_view');
-
-function load_config() {
-  let home = homedir();
-  let paths = [
-    path.resolve('./multimeter.config.js'),
-    path.resolve(home, '.config/multimeter.config.js'),
-    path.resolve(home, '.multimeter.config.js'),
-  ];
-  for (var i = 0; i < paths.length; i++) {
-    if (fs.existsSync(paths[i])) {
-      return require(paths[i]);
-    }
-  }
-  return {};
-}
-
-const config = load_config();
+const configManager = require('../src/config_manager');
+const nux = require('../src/nux');
 
 const MOTD = "Now showing Screeps console. Type /help for help.";
 
-console.log("Connecting to Screens...");
-Promise.resolve(connect())
+Promise.resolve(loadConfig())
+  .then(connect)
   .then(start)
   .catch((ex) => {
-    screen.destroy();
     console.error(ex);
     process.exit(1);
   });
 
-function connect() {
+function loadConfig() {
+  return configManager.loadConfig()
+    .then(([path, config]) => {
+      if (path) return config;
+      // No saved config, need to run the NUX.
+      return nux().then(([path, config]) => config);
+    });
+}
+
+function connect(config) {
   return new Promise((resolve, reject) => {
+    console.log("Connecting to Screens...");
     let api = new ScreepsAPI();
     api.auth(config.email, config.password, (err, result) => {
       if (result) {
