@@ -175,8 +175,13 @@ module.exports = class MainView extends blessed.element {
   }
 
   setGauges(cpu_current, mem_current) {
-    this.cpuLabel.setContent(printf("CPU: %3d/%3d", cpu_current, this.cpuLimit));
-    this.cpuBar.setProgress(cpu_current / this.cpuLimit * 100);
+    if (Number.isNaN(parseInt(cpu_current, 10))) {
+      this.cpuLabel.setContent("CPU: ERROR");
+      this.cpuBar.setProgress(100);
+    } else {
+      this.cpuLabel.setContent(printf("CPU: %3d/%3d", cpu_current, this.cpuLimit));
+      this.cpuBar.setProgress(cpu_current / this.cpuLimit * 100);
+    }
     this.memLabel.setContent(printf("Mem: %4dK/%4dK", mem_current / 1024, this.memLimit / 1024));
     this.memBar.setProgress(mem_current / this.memLimit * 100);
     this.screen.render();
