@@ -5,6 +5,9 @@ const printf = require('printf');
 const _ = require('lodash');
 const Console = require('./console');
 const EventEmitter = require('events');
+const require_relative = require('require-relative');
+const path = require('path');
+const util = require('util');
 
 const MOTD = "Now showing Screeps console. Type /help for help.";
 
@@ -73,15 +76,25 @@ class Gauges extends blessed.box {
 }
 
 module.exports = class Multimeter extends EventEmitter {
-  constructor(config) {
+  constructor(configManager) {
     super();
-    this.config = config;
+    this.configManager = configManager;
+    this.config = configManager.config;
     this.commands = {};
     this.cpuLimit = 1;
     this.memoryLimit = 2097152;
 
-    this.addCommand("quit", "Exit the program.", this.commandQuit.bind(this));
-    this.addCommand("help", "List the available commands.", this.commandHelp.bind(this));
+    this.addCommand("quit", {
+      description: "Exit the program.",
+      handler: this.commandQuit.bind(this)
+    });
+    this.addCommand("help", {
+      description: "List the available commands. Try \"/help help\".",
+      helpText: "Usage: /help COMMAND\tFind out the usage for COMMAND.\nUsage: /help        \tList all available commands.",
+      handler: this.commandHelp.bind(this)
+    });
+
+    this.loadPlugins();
   }
 
   run() {
@@ -153,8 +166,10 @@ module.exports = class Multimeter extends EventEmitter {
       this.api.on('console', (msg) => {
         let [user, data] = msg;
         if (data.messages) {
-          data.messages.log.forEach(l => this.console.addLines('log', l))
-          data.messages.results.forEach(l => this.console.addLines('result', l))
+          data.messages.log.forEach(l => {
+            this.console.addLines('log', l)
+          });
+          data.messages.results.forEach(l => this.console.addLines('result', l));
         }
         if (data.error) this.console.addLines('error', data.error);
       });
@@ -165,7 +180,7 @@ module.exports = class Multimeter extends EventEmitter {
         }
       });
       this.api.on('code', (msg) => {
-        this.console.addLines('system', 'Code updated');
+        this.log('Code updated');
       });
 
       this.api.me((err, data) => {
@@ -174,6 +189,13 @@ module.exports = class Multimeter extends EventEmitter {
       });
 
       return api;
+    });
+  }
+
+  loadPlugins() {
+    _.each(this.config.plugins, (name) => {
+      let module = require_relative(name, this.configManager.filename);
+      module(this);
     });
   }
 
@@ -187,15 +209,34 @@ module.exports = class Multimeter extends EventEmitter {
     }
   }
 
-  addCommand(command, description, handler) {
-    this.commands[command] = { description, handler };
+  addCommand(command, config) {
+    this.commands[command] = config;
   }
 
   commandQuit() {
     this.emit('exit');
   }
 
-  commandHelp() {
-    this.console.addLines('system', 'Available commands:\n' + _.map(this.commands, (cmd, key) => '/' + key + '\t' + cmd.description).join('\n'));
+  commandHelp(args) {
+    if (args.length > 0) {
+      let name = args[0].replace(/^\//, '');
+      var command = this.commands[name];
+      if (command) {
+        if (command.helpText) {
+          this.log('Help for /' + name + ':\n' + command.helpText);
+        } else {
+          this.log('/' + name + '\t' + command.description);
+        }
+      } else {
+        this.log('No help available for /' + name + ': not a valid command');
+      }
+    } else {
+      this.log('Available commands:\n' + _.map(this.commands, (cmd, key) => '/' + key + '\t' + cmd.description).join('\n'));
+    }
+  }
+
+  log() {
+    var message = util.format.apply(null, arguments);
+    this.console.addLines('system', message);
   }
 };

@@ -3,6 +3,10 @@ const configManager = require('./config_manager');
 
 const DIALOG_LABEL = ' {blue-fg}Multimeter Config{/blue-fg} ';
 
+const CONFIG_DEFAULTS = {
+  plugins: [ "screeps-multimeter/plugins/watch" ],
+};
+
 function promiseFinally(promise, handler) {
   return promise.then(
 		(res) => Promise.resolve(handler()).then(() => res),
@@ -70,6 +74,7 @@ module.exports = function() {
     .then((config) => prompt(screen, "Enter your screeps password:").then((password) => Object.assign({ password }, config)))
     .then((config) => prompt(screen, "Enter a filename for configuration:", "screeps-multimeter.json").then((filename) => [ filename, config ]))
     .then(([filename, config]) => {
+      config = Object.assign(config, CONFIG_DEFAULTS);
       configManager.config = config;
       return configManager.saveConfig(filename).then(() => [filename, config]);
     });

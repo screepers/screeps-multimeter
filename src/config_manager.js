@@ -36,8 +36,12 @@ exports.loadConfig = function() {
         .then((json) => [ filename, json ]);
     });
   }, Promise.reject())
-    .then(([filename, json]) => [ filename, JSON.parse(json) ])
-    .catch((err) => {
+    .then(([filename, json]) => {
+      let config = JSON.parse(json);
+      globalConfigFilename = filename;
+      globalConfig = config;
+      return [ filename, config ];
+    }).catch((err) => {
       if (err.code == 'ENOENT') {
         return Promise.resolve([ null, {} ]);
       } else {
@@ -53,7 +57,7 @@ exports.saveConfig = function(filename) {
   } else if (!globalConfig) {
     return Promise.reject(new Error("Config not loaded yet"));
   }
-  let data = JSON.stringify(globalConfig);
+  let data = JSON.stringify(globalConfig, null, 2);
   globalConfigFilename = filename;
   return fs.writeFile(filename, data, 'utf-8');
 };

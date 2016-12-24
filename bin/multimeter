@@ -6,11 +6,11 @@ const Multimeter = require('../src/multimeter');
 
 Promise.resolve(configManager.loadConfig())
   .then(([path, config]) => {
-    if (path) return config;
+    if (path) return;
     // No saved config, need to run the NUX.
-    return nux().then(([path, config]) => config);
-  }).then((config) => {
-    var app = new Multimeter(config);
+    return nux();
+  }).then(() => {
+    var app = new Multimeter(configManager);
     app.run();
     app.on('exit', () => {
       process.exit(0);

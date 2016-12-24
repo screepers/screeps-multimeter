@@ -28,6 +28,7 @@
     "lodash": "^4.17.2",
     "mz": "^2.6.0",
     "printf": "^0.2.5",
+    "require-relative": "^0.8.7",
     "screeps-api": "^0.2.8"
   }
 }
