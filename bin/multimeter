@@ -1,15 +1,9 @@
 #!/usr/bin/env node
 
 const ScreepsAPI = require('screeps-api')
-const blessed = require('blessed');
-const path = require('path');
-const fs = require('fs');
-const homedir = require('homedir');
-const MainView = require('../src/main_view');
 const configManager = require('../src/config_manager');
 const nux = require('../src/nux');
-
-const MOTD = "Now showing Screeps console. Type /help for help.";
+const Multimeter = require('../src/multimeter');
 
 Promise.resolve(loadConfig())
   .then(connect)
@@ -52,28 +46,6 @@ function connect(config) {
 }
 
 function start(api) {
-  return new Promise((resolve, reject) => {
-    let screen = blessed.screen({
-      smartCSR: true,
-    });
-
-    screen.title = "Screeps";
-
-    let view = new MainView({
-      parent: screen,
-      top: 0,
-      left: 0,
-      width: screen.width,
-      height: screen.height,
-    });
-
-    view.on('exit', () => {
-      screen.destroy();
-      process.exit(0);
-    });
-
-    view.setAPI(api);
-    view.focus();
-    view.log(MOTD);
-  })
+  var app = new Multimeter(api);
+  return app.run();
 }
