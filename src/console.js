@@ -6,10 +6,10 @@ module.exports = class Console extends blessed.element {
     super(opts);
     this.outputView = blessed.log({
       parent: this,
-      top: 1,
+      top: 0,
       left: 0,
       width: this.width,
-      height: this.height - 2,
+      height: this.height - 1,
       scrollback: 5000,
       tags: true,
     });
