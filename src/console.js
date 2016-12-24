@@ -58,15 +58,15 @@ module.exports = class Console extends blessed.element {
   addLines(type, line) {
     line = line.split("\n").join("\n    ");
     if (type == 'system') {
-      this.outputView.log('{bold}*** ' + line + '{/bold}');
+      this.outputView.log('{bold}*** ' + line + '{/}');
     } else if (type == 'console') {
-      this.outputView.log('<<< ' + line);
+      this.outputView.log('<<< ' + line + '{/}');
     } else if (type == 'result') {
-      this.outputView.log('>>> ' + line);
+      this.outputView.log('>>> ' + line + '{/}');
     } else if (type == 'error') {
       this.outputView.log('{red-fg}{bold}!!!{/bold} ' + line + '{/}');
     } else {
-      this.outputView.log('  - ' + line);
+      this.outputView.log('  - ' + line + '{/}');
     }
 
     this.screen.render();
