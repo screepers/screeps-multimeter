@@ -23,6 +23,7 @@ module.exports = class Console extends blessed.element {
       inputOnFocus: true,
       completer: this.handleComplete.bind(this),
       prompt: "<<< ",
+      historyFile: opts.historyFile,
       style: { inverse: true },
     });
 

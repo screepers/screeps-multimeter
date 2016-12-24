@@ -37,3 +37,4 @@ jspm_packages
 .node_repl_history
 multimeter.config.js
 screeps-multimeter.json
+.screeps-multimeter.history
