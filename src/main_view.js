@@ -88,7 +88,7 @@ module.exports = class MainView extends blessed.element {
         }
       } else if (command.length > 0) {
         this.console.addLines('console', command);
-        this.api.console(command);
+        if (this.api) this.api.console(command);
       }
       this.screen.render();
     });
