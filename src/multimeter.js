@@ -2,6 +2,7 @@ const ScreepsAPI = require('screeps-api')
 const blessed = require('blessed');
 const configManager = require('../src/config_manager');
 const printf = require('printf');
+const pad = require('pad');
 const _ = require('lodash');
 const Console = require('./console');
 const EventEmitter = require('events');
@@ -122,21 +123,7 @@ module.exports = class Multimeter extends EventEmitter {
 
     this.console.focus();
 
-    this.console.on('line', (command) => {
-      if (command[0] == '/') {
-        let args = command.slice(1).split(' ');
-        let cmd = this.commands[args[0]];
-        if (cmd) {
-          cmd.handler.call(null, args.slice(1));
-        } else {
-          this.console.log("Invalid command: " + args[0]);
-        }
-      } else if (command.length > 0) {
-        this.console.addLines('console', command);
-        if (this.api) this.api.console(command);
-      }
-      this.screen.render();
-    });
+    this.console.on('line', this.handleConsoleLine.bind(this));
 
     this.connect()
       .then((api) => {
@@ -200,6 +187,23 @@ module.exports = class Multimeter extends EventEmitter {
     });
   }
 
+  /// Interpret command as if the user had typed it in the console.
+  handleConsoleLine(command) {
+    if (command[0] == '/') {
+      let args = command.slice(1).split(' ');
+      let cmd = this.commands[args[0].toLowerCase()];
+      if (cmd) {
+        cmd.handler.call(null, args.slice(1));
+      } else {
+        this.console.log("Invalid command: " + args[0]);
+      }
+    } else if (command.length > 0) {
+      this.console.addLines('console', command);
+      if (this.api) this.api.console(command);
+    }
+    this.screen.render();
+  }
+
   handleComplete(line) {
     if (line[0] == '/') {
       let prefix = line.slice(1).toLowerCase();
@@ -210,8 +214,18 @@ module.exports = class Multimeter extends EventEmitter {
     }
   }
 
+  /// Register a slash-command. Config object looks like:
+  /// {
+  ///   description: "1 line description of command",
+  ///   helpText: "Full documentation for command",
+  ///   handler: function(args) { /* do the command */ },
+  /// }
   addCommand(command, config) {
-    this.commands[command] = config;
+    this.commands[command.toLowerCase()] = config;
+  }
+
+  removeCommand(command) {
+    delete this.commands[command.toLowerCase()];
   }
 
   commandQuit() {
@@ -220,7 +234,7 @@ module.exports = class Multimeter extends EventEmitter {
 
   commandHelp(args) {
     if (args.length > 0) {
-      let name = args[0].replace(/^\//, '');
+      let name = args[0].replace(/^\//, '').toLowerCase();;
       var command = this.commands[name];
       if (command) {
         if (command.helpText) {
@@ -232,7 +246,9 @@ module.exports = class Multimeter extends EventEmitter {
         this.log('No help available for /' + name + ': not a valid command');
       }
     } else {
-      this.log('Available commands:\n' + _.map(this.commands, (cmd, key) => '/' + key + '\t' + cmd.description).join('\n'));
+      let list = _.sortBy(_.map(this.commands, (c, k) => Object.assign({ name: k }, c)), (c) => c.name);
+      let longest = _.max(_.map(list, (c) => c.name.length));
+      this.log('Available commands:\n' + _.map(list, (cmd) => '/' + pad(cmd.name, longest) + '  ' + cmd.description).join('\n'));
     }
   }
 
