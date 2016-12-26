@@ -2,7 +2,6 @@ const ScreepsAPI = require('screeps-api')
 const blessed = require('blessed');
 const configManager = require('../src/config_manager');
 const printf = require('printf');
-const pad = require('pad');
 const _ = require('lodash');
 const Console = require('./console');
 const EventEmitter = require('events');
@@ -248,7 +247,7 @@ module.exports = class Multimeter extends EventEmitter {
     } else {
       let list = _.sortBy(_.map(this.commands, (c, k) => Object.assign({ name: k }, c)), (c) => c.name);
       let longest = _.max(_.map(list, (c) => c.name.length));
-      this.log('Available commands:\n' + _.map(list, (cmd) => '/' + pad(cmd.name, longest) + '  ' + cmd.description).join('\n'));
+      this.log('Available commands:\n' + _.map(list, (cmd) => '/' + _.padRight(cmd.name, longest) + '  ' + cmd.description).join('\n'));
     }
   }
 

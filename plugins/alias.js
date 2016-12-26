@@ -85,7 +85,7 @@ module.exports = function(multimeter) {
     } else {
       matched = matched.sort();
       let longest = _.max(_.map(matched, (c) => c.length));
-      multimeter.log("List of " + label + ":\n" + _.map(matched, (c) => pad(c, longest) + '  ' + multimeter.commands[c.toLowerCase()].description));
+      multimeter.log("List of " + label + ":\n" + _.map(matched, (c) => _.padRight(c, longest) + '  ' + multimeter.commands[c.toLowerCase()].description).join("\n"));
     }
   }
 
