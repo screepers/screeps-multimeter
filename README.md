@@ -38,7 +38,16 @@ Colors can be specified as a name, e.g. red, blue, yellow, cyan (see [colorNames
 
 ## Plugins
 
-Multimeter currently ships with one plugin.
+Multimeter currently ships with these plugins enabled by default. To select which plugins are loaded, edit the `plugins` array in your `screeps-multimeter.json`.
+
+### Plugin: Alias
+
+The alias plugin can be used to easily store and access commonly used console commands. Create a new alias by using `/alias NAME COMMAND`. Now, `/NAME` will automatically expand to `COMMAND`. For example, this alias will let you list all damaged creeps by typing `/damagedCreeps`:
+
+```
+/alias damagedCreeps _.filter(Game.creeps, (c) => c.hits < c.hitsMax)
+/damagedCreeps
+```
 
 ### Plugin: Watch
 
