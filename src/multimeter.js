@@ -16,14 +16,31 @@ const BUILTIN_PLUGINS = [
     "screeps-multimeter/plugins/watch"
 ];
 
-class Gauges extends blessed.box {
+class Gauges extends blessed.layout {
   constructor(opts) {
     super(Object.assign({
       style: { inverse: true },
+      layout: 'grid',
     }, opts));
 
-    this.cpuLabel = blessed.text({
+    let cpu_box = blessed.box({
       parent: this,
+      top: 0,
+      height: 1,
+      width: '50%',
+      style: { inverse: true },
+    });
+
+    let mem_box = blessed.box({
+      parent: this,
+      top: 0,
+      height: 1,
+      width: '50%',
+      style: { inverse: true },
+    });
+
+    this.cpuLabel = blessed.text({
+      parent: cpu_box,
       top: 0,
       left: 0,
       height: 1,
@@ -33,20 +50,19 @@ class Gauges extends blessed.box {
     });
 
     this.cpuBar = blessed.progressbar({
-      parent: this,
+      parent: cpu_box,
       top: 0,
       height: 1,
       left: this.cpuLabel.width + 1,
-      right: this.width / 2 - 1,
       pch: '|',
       bch: ' ',
       style: { inverse: true, bar: { inverse: true } },
     });
 
     this.memLabel = blessed.text({
-      parent: this,
+      parent: mem_box,
       top: 0,
-      left: this.width / 2,
+      left: 0,
       height: 1,
       width: 16,
       content: "Mem:     K/    K",
@@ -54,11 +70,10 @@ class Gauges extends blessed.box {
     });
 
     this.memBar = blessed.progressbar({
-      parent: this,
+      parent: mem_box,
       top: 0,
       height: 1,
-      left: this.memLabel.left + this.memLabel.width + 1,
-      right: this.width - 1,
+      left: this.memLabel.width + 1,
       pch: '|',
       bch: ' ',
       style: { inverse: true, bar: { inverse: true } },
@@ -112,7 +127,6 @@ module.exports = class Multimeter extends EventEmitter {
       parent: this.screen,
       top: 0,
       left: 0,
-      width: this.screen.width,
       height: 1,
     });
 
@@ -120,8 +134,8 @@ module.exports = class Multimeter extends EventEmitter {
       parent: this.screen,
       top: 1,
       left: 0,
-      width: this.screen.width,
-      height: this.screen.height - 1,
+      right: 0,
+      bottom: 0,
       historyFile: '.screeps-multimeter.history',
     });
 

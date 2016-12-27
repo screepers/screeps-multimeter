@@ -8,17 +8,15 @@ module.exports = class Console extends blessed.element {
       parent: this,
       top: 0,
       left: 0,
-      width: this.width,
-      height: this.height - 1,
+      bottom: 1,
       scrollback: 5000,
       tags: true,
     });
 
     this.inputView = new text_prompt({
       parent: this,
-      top: this.height - 1,
+      top: '100%-1',
       left: 0,
-      width: this.width,
       height: 1,
       inputOnFocus: true,
       completer: this.handleComplete.bind(this),
