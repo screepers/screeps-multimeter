@@ -1,4 +1,4 @@
-const ScreepsAPI = require('screeps-api')
+const ScreepsAPI = require('./screeps_api')
 const blessed = require('blessed');
 const configManager = require('../src/config_manager');
 const printf = require('printf');
@@ -146,6 +146,7 @@ module.exports = class Multimeter extends EventEmitter {
     this.connect()
       .then((api) => {
         this.console.log(MOTD);
+        this.emit('connect');
       });
   }
 
