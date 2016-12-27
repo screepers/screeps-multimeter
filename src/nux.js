@@ -4,10 +4,7 @@ const configManager = require('./config_manager');
 const DIALOG_LABEL = ' {blue-fg}Multimeter Config{/blue-fg} ';
 
 const CONFIG_DEFAULTS = {
-  plugins: [
-    "screeps-multimeter/plugins/alias",
-    "screeps-multimeter/plugins/watch"
-  ],
+  plugins: [],
 };
 
 function promiseFinally(promise, handler) {

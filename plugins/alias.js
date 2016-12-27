@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const pad = require('pad');
 
 const HELP_TEXT =
 "Create and update aliases (command shortcuts).\n" +

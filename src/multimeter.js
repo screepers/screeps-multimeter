@@ -10,6 +10,11 @@ const path = require('path');
 const util = require('util');
 
 const MOTD = "Now showing Screeps console. Type /help for help.";
+const BUILTIN_PLUGINS = [
+    "screeps-multimeter/plugins/alias",
+    "screeps-multimeter/plugins/auto_update",
+    "screeps-multimeter/plugins/watch"
+];
 
 class Gauges extends blessed.box {
   constructor(opts) {
@@ -180,7 +185,8 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   loadPlugins() {
-    _.each(this.config.plugins, (name) => {
+    let plugins = _.uniq(BUILTIN_PLUGINS.concat(this.config.plugins))
+    _.each(plugins, (name) => {
       let module = require_relative(name, this.configManager.filename);
       module(this);
     });

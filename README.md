@@ -1,4 +1,4 @@
-[![npm version](https://badge.fury.io/js/screeps-multimeter.svg)](https://badge.fury.io/js/screeps-multimeter)
+[![NPM version](https://nodei.co/npm/screeps-multimeter.png?downloads=true)](https://nodei.co/npm/screeps-multimeter/)
 
 # screeps-multimeter
 Multimeter is a hackable console for the game [Screeps](https://screeps.com/). It lets you access your Screeps console without loading up the full website (and as a result lets you play Screeps for much longer on a single battery charge), and is hackable with plugins.
