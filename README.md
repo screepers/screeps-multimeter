@@ -62,7 +62,7 @@ exports.loop = function() {
 };
 ```
 
-To use the plugin, just type `/watch EXPR`, where EXPR is any expression that you want to log. For example, `/watch Game.time` will log the game time every tick.
+There are two ways to watch expressions. You can log it to the console normally by using `/watch console EXPR`. You can also log to a status bar at the bottom of the screen using `/watch status EXPR`. For example, `/watch status _.keys(Game.creeps).length` will keep a count of the number of live creeps at the bottom of the terminal.
 
 ## Contributing
 
