@@ -96,7 +96,7 @@ module.exports = function(multimeter) {
     }
   }
 
-  multimeter.on('connect', () => {
+  multimeter.api.on('open', () => {
     getWatchExpressions().catch(errorHandler);
 
     multimeter.api.on('memory', ([path, value]) => {

@@ -113,14 +113,23 @@ module.exports = class Multimeter extends EventEmitter {
       helpText: "Usage: /help COMMAND\tFind out the usage for COMMAND.\nUsage: /help        \tList all available commands.",
       handler: this.commandHelp.bind(this)
     });
-
-    this.loadPlugins();
   }
 
   run() {
+    this.api = new ScreepsAPI();
+
     this.screen = blessed.screen({
       smartCSR: true,
       title: "Screeps",
+    });
+
+    this.screen.program.key('C-c', () => {
+      process.exit(0);
+    });
+
+    this.screen.program.key('C-l', () => {
+      this.screen.alloc();
+      this.screen.render();
     });
 
     this.gauges = new Gauges({
@@ -140,63 +149,56 @@ module.exports = class Multimeter extends EventEmitter {
     });
 
     this.console.focus();
-
     this.console.on('line', this.handleConsoleLine.bind(this));
+
+    this.loadPlugins();
 
     this.connect()
       .then((api) => {
         this.console.log(MOTD);
-        this.emit('connect');
       });
   }
 
   connect() {
-    return new Promise((resolve, reject) => {
-      this.console.log("Connecting to Screeps as " + this.config.email + "...");
-      this.api = new ScreepsAPI();
-      this.api.auth(this.config.email, this.config.password, (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      })
-    }).then(() => new Promise((resolve, reject) => {
-      this.api.socket();
-
-      this.api.on('message', (msg) => {
-        if (msg.slice(0, 7) == 'auth ok') {
-          resolve(this.api);
-        }
-      })
-    })).then((api) => {
+    this.console.log("Connecting to Screeps as " + this.config.email + "...");
+    this.api.on('open', () => {
       this.api.subscribe('/console');
       this.api.subscribe('/cpu');
       this.api.subscribe('/code');
-      this.api.on('console', (msg) => {
-        let [user, data] = msg;
-        if (data.messages) {
-          data.messages.log.forEach(l => {
-            this.console.addLines('log', l)
-          });
-          data.messages.results.forEach(l => this.console.addLines('result', l));
-        }
-        if (data.error) this.console.addLines('error', data.error);
-      });
-      this.api.on('message', (msg) => {
-        if (msg[0].slice(-4) == "/cpu") {
-          let cpu = msg[1].cpu, memory = msg[1].memory;
-          this.gauges.update(cpu, this.cpuLimit, memory, this.memoryLimit);
-        }
-      });
-      this.api.on('code', (msg) => {
-        this.log('Code updated');
-      });
-
-      this.api.me((err, data) => {
-        this.cpuLimit = data.cpu;
-        this.memLimit = 2097152;
-      });
-
-      return api;
     });
+
+    this.api.on('console', (msg) => {
+      let [user, data] = msg;
+      if (data.messages) {
+        data.messages.log.forEach(l => {
+          this.console.addLines('log', l)
+        });
+        data.messages.results.forEach(l => this.console.addLines('result', l));
+      }
+      if (data.error) this.console.addLines('error', data.error);
+    });
+    this.api.on('message', (msg) => {
+      if (msg[0].slice(-4) == "/cpu") {
+        let cpu = msg[1].cpu, memory = msg[1].memory;
+        this.gauges.update(cpu, this.cpuLimit, memory, this.memoryLimit);
+      }
+    });
+    this.api.on('code', (msg) => {
+      this.log('Code updated');
+    });
+
+    this.api.on('close', () => {
+      this.log("Disconnected. Reconnecting...");
+      this.api.reconnect();
+    });
+
+    return this.api.auth(this.config.email, this.config.password)
+      .then(() => {
+        this.api.me((err, data) => {
+          this.cpuLimit = data.cpu;
+          this.memLimit = 2097152;
+        });
+      });
   }
 
   loadPlugins() {
