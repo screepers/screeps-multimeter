@@ -6,7 +6,9 @@ const HELP_TEXT =
 "/alias NAME          Show the current value of the NAME alias.\n" +
 "/alias NAME COMMAND  Register NAME as an alias for COMMAND.\n" +
 "/aliases             List all available aliases.\n" +
-"/delalias NAME       Remove the alias for NAME.";
+"/delalias NAME       Remove the alias for NAME.\n" +
+"\n" +
+"Aliases can have parameters, which can be substituted using $args (all arguments), $1 (the first argument), $2, etc.";
 
 module.exports = function(multimeter) {
   let aliases = {}
@@ -68,7 +70,13 @@ module.exports = function(multimeter) {
   }
 
   function commandRunAlias(command, args) {
-    multimeter.handleConsoleLine(aliases[command]);
+    let substituted = aliases[command].replace(/\$(\$|args\b|\d+\b)/g, (_, name) => {
+      if (name == "$") return "$";
+      if (name == "args") return JSON.stringify(args.join(" "));
+      let arg = args[parseInt(name, 10) - 1];
+      return arg ? JSON.stringify(arg) : "void(0)";
+    });
+    multimeter.handleConsoleLine(substituted);
   }
 
   function commandListAliases(args) {

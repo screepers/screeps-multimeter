@@ -46,7 +46,7 @@ class ModifiedScreepsAPI extends ScreepsAPI {
         if (cb) cb();
 
         let schedule_ping = _.debounce(() => {
-          this.ws.ping(1);
+          if (this.ws) this.ws.ping(1);
         }, 10000);
         this.ws.on('message', schedule_ping);
 

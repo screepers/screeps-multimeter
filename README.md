@@ -49,6 +49,13 @@ The alias plugin can be used to easily store and access commonly used console co
 /damagedCreeps
 ```
 
+Aliases can also take parameters. There will be available in variables like `$1`, `$2`, etc. The entire passed string is available as `$args`. For example:
+
+```
+/alias hitsLeft "Creep " + $1 + " has " + Game.creeps[$1].hits + " hits left"
+/hitsLeft Ryan
+```
+
 ### Plugin: Watch
 
 The watch plugin will log an expression to your console on every tick. To install it, copy [watch-client.js](lib/watch-client.js) to your script and add some code to your `loop` function:

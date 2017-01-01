@@ -60,6 +60,7 @@ module.exports = function(multimeter) {
           top: '100%-1',
           left: 0,
           height: 1,
+          tags: true,
         });
         multimeter.console.position.bottom = 1;
       }
