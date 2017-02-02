@@ -11,9 +11,9 @@ const util = require('util');
 
 const MOTD = "Now showing Screeps console. Type /help for help.";
 const BUILTIN_PLUGINS = [
-    "screeps-multimeter/plugins/alias",
-    "screeps-multimeter/plugins/auto_update",
-    "screeps-multimeter/plugins/watch"
+    "../plugins/alias",
+    "../plugins/auto_update",
+    "../plugins/watch"
 ];
 
 class Gauges extends blessed.layout {
@@ -104,14 +104,18 @@ module.exports = class Multimeter extends EventEmitter {
     this.cpuLimit = 1;
     this.memoryLimit = 2097152;
 
-    this.addCommand("quit", {
-      description: "Exit the program.",
-      handler: this.commandQuit.bind(this)
-    });
     this.addCommand("help", {
       description: "List the available commands. Try \"/help help\".",
       helpText: "Usage: /help COMMAND\tFind out the usage for COMMAND.\nUsage: /help        \tList all available commands.",
       handler: this.commandHelp.bind(this)
+    });
+    this.addCommand("reconnect", {
+      description: "Force a reconnection.",
+      handler: this.commandReconnect.bind(this)
+    });
+    this.addCommand("quit", {
+      description: "Exit the program.",
+      handler: this.commandQuit.bind(this)
     });
   }
 
@@ -162,6 +166,10 @@ module.exports = class Multimeter extends EventEmitter {
   connect() {
     this.console.log("Connecting to Screeps as " + this.config.email + "...");
     this.api.on('open', () => {
+      // Force a screen refresh to clear the screeps-api debug output
+      this.screen.alloc();
+      this.screen.render();
+
       this.api.subscribe('/console');
       this.api.subscribe('/cpu');
       this.api.subscribe('/code');
@@ -202,8 +210,11 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   loadPlugins() {
-    let plugins = _.uniq(BUILTIN_PLUGINS.concat(this.config.plugins))
-    _.each(plugins, (name) => {
+    _.each(BUILTIN_PLUGINS, (name) => {
+      let module = require(name);
+      module(this);
+    });
+    _.each(this.config.plugins, (name) => {
       let module = require_relative(name, this.configManager.filename);
       module(this);
     });
@@ -250,10 +261,6 @@ module.exports = class Multimeter extends EventEmitter {
     delete this.commands[command.toLowerCase()];
   }
 
-  commandQuit() {
-    this.emit('exit');
-  }
-
   commandHelp(args) {
     if (args.length > 0) {
       let name = args[0].replace(/^\//, '').toLowerCase();;
@@ -272,6 +279,14 @@ module.exports = class Multimeter extends EventEmitter {
       let longest = _.max(_.map(list, (c) => c.name.length));
       this.log('Available commands:\n' + _.map(list, (cmd) => '/' + _.padRight(cmd.name, longest) + '  ' + cmd.description).join('\n'));
     }
+  }
+
+  commandReconnect() {
+    if (this.api.ws) this.api.ws.close();
+  }
+
+  commandQuit() {
+    this.emit('exit');
   }
 
   log() {

@@ -98,6 +98,7 @@ module.exports = function(multimeter) {
   }
 
   multimeter.api.on('open', () => {
+    subscriptions.clear();
     getWatchExpressions().catch(errorHandler);
 
     multimeter.api.on('memory', ([path, value]) => {
