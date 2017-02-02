@@ -75,13 +75,4 @@ There are two ways to watch expressions. You can log it to the console normally 
 
 If you have feedback, bugs, or feature requests for multimeter, don't hesitate to look through [the issues](https://github.com/CGamesPlay/screeps-multimeter/issues) and add your thoughts. Please search to see if someone else has already filed a related issue before you submit a new one.
 
-Multimeter is built for hacking! The easiest way to add a feature to multimeter is to make a new plugin for it.
-
-If you need to change something and it can't be done with a plugin, you can fork multimeter and submit a pull request. There are some extra steps needed to be able to run in a cloned copy of multimeter: you need to link your clone into your global node_modules directory, and ensure that directory is in your NODE_PATH. If you don't do this, you will get "Cannot find module" errors.
-
-```
-cd screeps-multimeter
-npm link
-export NODE_PATH=/usr/local/lib/node_modules
-multimeter
-```
+Multimeter is built for hacking! The easiest way to add a feature to multimeter is to make a new plugin for it. If you need to change something and it can't be done with a plugin, you can fork multimeter and submit a pull request. Ideally, you can add the necessary hooks so that other plugins can take advantage of them.
