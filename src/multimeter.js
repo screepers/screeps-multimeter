@@ -13,7 +13,8 @@ const MOTD = "Now showing Screeps console. Type /help for help.";
 const BUILTIN_PLUGINS = [
     "../plugins/alias",
     "../plugins/auto_update",
-    "../plugins/watch"
+    "../plugins/watch",
+    "../plugins/screeps_console.compat"
 ];
 
 class Gauges extends blessed.layout {

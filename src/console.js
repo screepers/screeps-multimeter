@@ -55,8 +55,15 @@ module.exports = class Console extends blessed.element {
   }
 
   addLines(type, line) {
+    let event = { type, line }
+    this.emit('addLines',event)
+    line = event.line || line
     line = line.split("\n").join("\n    ");
-    if (type == 'system') {
+    if (event.skip) {
+      return;
+    } else if (event.formatted) {
+      this.outputView.log(line + '{/}');
+    } else if (type == 'system') {
       this.outputView.log('{bold}*** ' + line + '{/}');
     } else if (type == 'console') {
       this.outputView.log('<<< ' + line + '{/}');
