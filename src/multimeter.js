@@ -121,7 +121,9 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   run() {
-    this.api = new ScreepsAPI();
+    this.api = new ScreepsAPI({
+      serverUrl: this.config.serverUrl,
+    });
 
     this.screen = blessed.screen({
       smartCSR: true,
@@ -165,7 +167,7 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   connect() {
-    this.console.log("Connecting to Screeps as " + this.config.email + "...");
+    this.console.log(`Connecting to ${(this.config.serverUrl ? ('(' + this.config.serverUrl + ')') : 'Screeps')} as ${this.config.email} ...`);
     this.api.on('open', () => {
       // Force a screen refresh to clear the screeps-api debug output
       this.screen.alloc();
@@ -177,21 +179,21 @@ module.exports = class Multimeter extends EventEmitter {
     });
 
     this.api.on('console', (msg) => {
-      let [user, data] = msg;
+      const [, data] = msg;
       if (data.messages) {
-        data.messages.log.forEach(l => {
-          this.console.addLines('log', l)
-        });
+        data.messages.log.forEach(l => this.console.addLines('log', l));
         data.messages.results.forEach(l => this.console.addLines('result', l));
       }
       if (data.error) this.console.addLines('error', data.error);
     });
+
     this.api.on('message', (msg) => {
       if (msg[0].slice(-4) == "/cpu") {
-        let cpu = msg[1].cpu, memory = msg[1].memory;
+        const cpu = msg[1].cpu, memory = msg[1].memory;
         this.gauges.update(cpu, this.cpuLimit, memory, this.memoryLimit);
       }
     });
+
     this.api.on('code', (msg) => {
       this.log('Code updated');
     });
@@ -203,7 +205,8 @@ module.exports = class Multimeter extends EventEmitter {
 
     return this.api.auth(this.config.email, this.config.password)
       .then(() => {
-        this.api.me((err, data) => {
+        this.api.me(incomingMessage => {
+          const data = incomingMessage.body;
           this.cpuLimit = data.cpu;
           this.memLimit = 2097152;
         });
@@ -212,11 +215,11 @@ module.exports = class Multimeter extends EventEmitter {
 
   loadPlugins() {
     _.each(BUILTIN_PLUGINS, (name) => {
-      let module = require(name);
+      const module = require(name);
       module(this);
     });
     _.each(this.config.plugins, (name) => {
-      let module = require_relative(name, this.configManager.filename);
+      const module = require_relative(name, this.configManager.filename);
       module(this);
     });
   }
