@@ -70,11 +70,11 @@ module.exports = function(multimeter) {
   }
 
   function commandRunAlias(command, args) {
-    let substituted = aliases[command].replace(/\$(\$|args\b|\d+\b)/g, (_, name) => {
+    let substituted = aliases[command].replace(/\$(\*)?(\$|args\b|\d+\b)/g, (_, raw, name) => {
       if (name == "$") return "$";
       if (name == "args") return JSON.stringify(args.join(" "));
       let arg = args[parseInt(name, 10) - 1];
-      return arg ? JSON.stringify(arg) : "void(0)";
+      return arg ? (raw ? arg.toString() : JSON.stringify(arg)) : "void(0)";
     });
     multimeter.handleConsoleLine(substituted);
   }
