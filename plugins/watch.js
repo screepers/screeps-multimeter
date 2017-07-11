@@ -28,7 +28,7 @@ module.exports = function(multimeter) {
   }
 
   function errorHandler(err) {
-    multimeter.log("Cannot watch: " + err.message);
+    multimeter.log("Cannot watch: " + err.stack);
   }
 
   function getWatchExpressions() {

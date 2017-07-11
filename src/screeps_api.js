@@ -2,8 +2,8 @@ const ScreepsAPI = require('screeps-api');
 const _ = require('lodash');
 
 class ModifiedScreepsAPI extends ScreepsAPI {
-  constructor() {
-    super();
+  constructor(opts) {
+    super(opts);
     this.on('newListener', (event, listener) => {
       if (event == 'open' && this.ws != null) {
         listener();

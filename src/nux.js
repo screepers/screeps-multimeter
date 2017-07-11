@@ -72,6 +72,7 @@ module.exports = function() {
   var promise = Promise.resolve(message(screen, 'No config file was found, so I will now create one. Press ^C to exit or any other key to continue.'))
     .then((config) => prompt(screen, "Enter your screeps email:").then((email) => Object.assign({ email }, config)))
     .then((config) => prompt(screen, "Enter your screeps password:").then((password) => Object.assign({ password }, config)))
+    .then((config) => Object.assign({ serverUrl: null }, config))
     .then((config) => prompt(screen, "Enter a filename for configuration:", "screeps-multimeter.json").then((filename) => [ filename, config ]))
     .then(([filename, config]) => {
       config = Object.assign(config, CONFIG_DEFAULTS);
