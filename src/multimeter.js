@@ -187,20 +187,8 @@ module.exports = class Multimeter extends EventEmitter {
       this.log('Code updated');
     });
 
-    /*
-    this.api.socket.on('message', (msg) => {
-        this.log(JSON.stringify(msg));
-    });
-    */
-
-    this.api.socket.on('connected', () => {
-      //this.log("Connected.");
-    });
-
     this.api.socket.on('disconnected', () => {
       this.log("Disconnected. Reconnecting...");
-      // Reconnection is handled automatically by screeps-api
-      //this.api.socket.reconnect();
     });
 
     return this.api.socket.connect()
