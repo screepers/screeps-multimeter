@@ -1,4 +1,4 @@
-const ScreepsAPI = require('./screeps_api')
+const { ScreepsAPI } = require('screeps-api');
 const blessed = require('blessed');
 const configManager = require('../src/config_manager');
 const printf = require('printf');
@@ -122,7 +122,7 @@ module.exports = class Multimeter extends EventEmitter {
 
   run() {
     this.api = new ScreepsAPI({
-      serverUrl: this.config.serverUrl,
+      token: this.config.token,
     });
 
     this.screen = blessed.screen({
@@ -167,19 +167,10 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   connect() {
-    this.console.log(`Connecting to ${(this.config.serverUrl ? ('(' + this.config.serverUrl + ')') : 'Screeps')} as ${this.config.email} ...`);
-    this.api.on('open', () => {
-      // Force a screen refresh to clear the screeps-api debug output
-      this.screen.alloc();
-      this.screen.render();
+    this.console.log(`Connecting to (${this.api.opts.url}) ...`);
 
-      this.api.subscribe('/console');
-      this.api.subscribe('/cpu');
-      this.api.subscribe('/code');
-    });
-
-    this.api.on('console', (msg) => {
-      const [, data] = msg;
+    this.api.socket.subscribe('console', (event) => {
+      const { data } = event;
       if (data.messages) {
         data.messages.log.forEach(l => this.console.addLines('log', l));
         data.messages.results.forEach(l => this.console.addLines('result', l));
@@ -187,26 +178,22 @@ module.exports = class Multimeter extends EventEmitter {
       if (data.error) this.console.addLines('error', data.error);
     });
 
-    this.api.on('message', (msg) => {
-      if (msg[0].slice(-4) == "/cpu") {
-        const cpu = msg[1].cpu, memory = msg[1].memory;
-        this.gauges.update(cpu, this.cpuLimit, memory, this.memoryLimit);
-      }
+    this.api.socket.subscribe('cpu', (event) => {
+        var { data } = event;
+        this.gauges.update(data.cpu, this.cpuLimit, data.memory, this.memoryLimit);
     });
 
-    this.api.on('code', (msg) => {
+    this.api.socket.subscribe('code', (msg) => {
       this.log('Code updated');
     });
 
-    this.api.on('close', () => {
+    this.api.socket.on('disconnected', () => {
       this.log("Disconnected. Reconnecting...");
-      this.api.reconnect();
     });
 
-    return this.api.auth(this.config.email, this.config.password)
+    return this.api.socket.connect()
       .then(() => {
-        this.api.me(incomingMessage => {
-          const data = incomingMessage.body;
+        this.api.me().then(data => {
           this.cpuLimit = data.cpu;
           this.memLimit = 2097152;
         });
@@ -236,7 +223,7 @@ module.exports = class Multimeter extends EventEmitter {
       }
     } else if (command.length > 0) {
       this.console.addLines('console', command);
-      if (this.api) this.api.console(command);
+      if (this.api) this.api.console(command, this.config.shard);
     }
     this.screen.render();
   }
@@ -286,7 +273,7 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   commandReconnect() {
-    if (this.api.ws) this.api.ws.close();
+    if (this.api.socket.ws) this.api.socket.ws.close();
   }
 
   commandQuit() {
