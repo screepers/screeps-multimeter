@@ -4,6 +4,10 @@ const configManager = require('../src/config_manager');
 const nux = require('../src/nux');
 const Multimeter = require('../src/multimeter');
 
+process.on('unhandledRejection', function (err) {
+    throw err;
+});
+
 Promise.resolve(configManager.loadConfig())
   .then(([path, config]) => {
     if (path) return;

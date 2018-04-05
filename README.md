@@ -19,7 +19,8 @@ npm install -g screeps-multimeter
 multimeter
 ```
 
-When you run multimeter for the first time, it will ask you for your email and password and save it into a config file in the current directory.
+When you run multimeter for the first time, it will ask you for your [Screeps API token](http://docs.screeps.com/auth-tokens.html) and save it into a config file in the current directory.
+You will also need to specify the name of the shard to use.
 
 The main interface has a command line on the bottom. In type `/help` to see a list of the available commands. Type `/quit` to exit the program.
 
