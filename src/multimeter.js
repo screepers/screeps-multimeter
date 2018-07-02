@@ -123,6 +123,7 @@ module.exports = class Multimeter extends EventEmitter {
   run() {
     this.api = new ScreepsAPI({
       token: this.config.token,
+      url: this.config.url
     });
 
     this.screen = blessed.screen({
