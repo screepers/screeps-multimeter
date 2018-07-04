@@ -1,6 +1,6 @@
 {
   "name": "screeps-multimeter",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "The most useful tool on your screeps workbench.",
   "main": "index.js",
   "bin": {
@@ -13,9 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/CGamesPlay/screeps-multimeter.git"
   },
-  "keywords": [
-    "screeps"
-  ],
+  "keywords": ["screeps"],
   "author": "Ryan Patterson",
   "license": "MIT",
   "bugs": {
