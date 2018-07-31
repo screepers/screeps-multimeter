@@ -19,8 +19,13 @@ npm install -g screeps-multimeter
 multimeter
 ```
 
-When you run multimeter for the first time, it will ask you for your [Screeps API token](http://docs.screeps.com/auth-tokens.html) and save it into a config file in the current directory.
-You will also need to specify the name of the shard to use.
+When you run multimeter for the first time, it will ask a few setup questions to get you connected. These settings will be saved to a config file in the current directory.
+
+### Connecting to the official server
+Simply enter your [Screeps API token](http://docs.screeps.com/auth-tokens.html). You will also need to specify the name of the shard to use.
+
+### Connecting to a private server
+Leaving the api token blank and hitting enter will allow you to connect to a private server. You will need to provide the hostname, the port, and your username and password. Your username can either be your username or your email. You can get a password by setting up [screepsmod-auth](https://github.com/ScreepsMods/screepsmod-auth).
 
 The main interface has a command line on the bottom. In type `/help` to see a list of the available commands. Type `/quit` to exit the program.
 
