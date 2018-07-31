@@ -121,10 +121,16 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   run() {
-    this.api = new ScreepsAPI({
-      token: this.config.token,
-      url: this.config.url
-    });
+
+    var opts = {};
+    opts.token = this.config.token;
+    opts.protocol = this.config.token ? "https" : "http";
+    if (this.config.hostname)
+      opts.hostname = this.config.hostname;
+    if (this.config.port)
+      opts.port = this.config.port;
+
+    this.api = new ScreepsAPI(opts);
 
     this.screen = blessed.screen({
       smartCSR: true,
@@ -161,44 +167,55 @@ module.exports = class Multimeter extends EventEmitter {
 
     this.loadPlugins();
 
-    this.connect()
-      .then((api) => {
+    this.connect().then((api) => {
         this.console.log(MOTD);
-      });
+    })
   }
 
   connect() {
     this.console.log(`Connecting to (${this.api.opts.url}) ...`);
 
-    this.api.socket.subscribe('console', (event) => {
-      const { data } = event;
-      if (data.messages) {
-        data.messages.log.forEach(l => this.console.addLines('log', l));
-        data.messages.results.forEach(l => this.console.addLines('result', l));
-      }
-      if (data.error) this.console.addLines('error', data.error);
-    });
+    // We need to get a new token from the server if we don't already have one.
+    var authPromise = Promise.resolve();
+    if (!this.config.token) {
+      authPromise = this.api.auth(this.config.username, this.config.password, {
+        protocol: "http",
+        hostname: this.config.hostname,
+        port: this.config.port,
+      });
+    }
 
-    this.api.socket.subscribe('cpu', (event) => {
-        var { data } = event;
+    return authPromise.then(() => {
+      this.api.socket.subscribe("console", (event) => {
+        const {data} = event;
+        if (data.messages) {
+          data.messages.log.forEach(l => this.console.addLines("log", l));
+          data.messages.results.forEach(
+            l => this.console.addLines("result", l));
+        }
+        if (data.error) this.console.addLines("error", data.error);
+      });
+
+      this.api.socket.subscribe("cpu", (event) => {
+        var {data} = event;
         this.gauges.update(data.cpu, this.cpuLimit, data.memory, this.memoryLimit);
-    });
+      });
 
-    this.api.socket.subscribe('code', (msg) => {
-      this.log('Code updated');
-    });
+      this.api.socket.subscribe("code", (msg) => {
+        this.log("Code updated");
+      });
 
-    this.api.socket.on('disconnected', () => {
-      this.log("Disconnected. Reconnecting...");
-    });
+      this.api.socket.on("disconnected", () => {
+        this.log("Disconnected. Reconnecting...");
+      });
 
-    return this.api.socket.connect()
-      .then(() => {
+      this.api.socket.connect().then(() => {
         this.api.me().then(data => {
           this.cpuLimit = data.cpu;
           this.memLimit = 2097152;
         });
       });
+    });
   }
 
   loadPlugins() {

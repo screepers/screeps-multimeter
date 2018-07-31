@@ -70,7 +70,12 @@ module.exports = function() {
     screen.key('C-c', () => setTimeout(reject, 100, new Error("Canceled")));
   });
   var promise = Promise.resolve(message(screen, 'No config file was found, so I will now create one. Press ^C to exit or any other key to continue.'))
-    .then((config) => prompt(screen, "Enter your screeps API token:").then((token) => Object.assign({ token }, config)))
+    .then((config) => prompt(screen, "Enter your screeps API token (leave blank to connect to a private server):").then((token) => Object.assign({ token }, config),
+      () =>
+        prompt(screen, "Enter the hostname for the server (without port):").then((hostname) => Object.assign({ hostname }, config))
+        .then((config) => prompt(screen, "Enter the port for the server:").then((port) => Object.assign({ port }, config)))
+        .then((config) => prompt(screen, "Enter your username or email:").then((username) => Object.assign({ username }, config)))
+        .then((config) => prompt(screen, "Enter your password:").then((password) => Object.assign({ password }, config)))))
     .then((config) => prompt(screen, "Enter shard name:", "shard0").then((shard) => Object.assign({ shard }, config)))
     .then((config) => prompt(screen, "Enter a filename for configuration:", "screeps-multimeter.json").then((filename) => [ filename, config ]))
     .then(([filename, config]) => {
