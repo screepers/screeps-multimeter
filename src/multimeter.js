@@ -14,7 +14,8 @@ const BUILTIN_PLUGINS = [
     "../plugins/alias",
     "../plugins/auto_update",
     "../plugins/watch",
-    "../plugins/screeps_console.compat"
+    "../plugins/screeps_console.compat",
+    "../plugins/html.js"
 ];
 
 class Gauges extends blessed.layout {
