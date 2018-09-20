@@ -77,6 +77,41 @@ exports.loop = function() {
 
 There are two ways to watch expressions. You can log it to the console normally by using `/watch console EXPR`. You can also log to a status bar at the bottom of the screen using `/watch status EXPR`. For example, `/watch status _.keys(Game.creeps).length` will keep a count of the number of live creeps at the bottom of the terminal.
 
+### Plugin: HTML
+
+The HTML plugin allows you to style the log output using the 'style' attribute of HTML tags. It converts the values for the style attributes to the relevant blessed tags. It should work with any html tags, though has only been tested with `<div>`, `<span>`, and `<a>`. 
+
+It currently supports: `color`, `background`, `bold`, and `underline`
+- Text color: `style="color: #00FFFF;` or `style="color: blue;"`
+- Background: `style="background: #FFFF00;"` or `style="background: green;"`
+- Bold: `style="font-weight: bold;"`
+- Underline: `style="text-decoration: underline;"`
+
+```
+<span style="color: green;">Hello, World!</span>
+```
+
+Multiple styles may be included in a single tag:
+
+```
+<span style="color: #FF0000; background: blue; font-weight: bold;">Red-on-blue bolded text</span>
+```
+
+Tags may be nested:
+
+```
+<span style="color: #FF0000;">This is red <span style="color: #00FF00;">This is green </span> <span style="font-weight: bold;">This is bold red</span></span>
+
+//The same string, with newlines for visual clarity
+<span style="color: #FF0000;">
+    This is red 
+    <span style="color: #00FF00;">This is green </span>
+    <span style="text-decoration: underline;">This is red and underlined</span>
+</span>
+
+```
+
+
 ## Contributing
 
 If you have feedback, bugs, or feature requests for multimeter, don't hesitate to look through [the issues](https://github.com/CGamesPlay/screeps-multimeter/issues) and add your thoughts. Please search to see if someone else has already filed a related issue before you submit a new one.
