@@ -1,23 +1,29 @@
-const readline = require('readline');
-const fs = require('mz/fs');
-const blessed = require('blessed');
-const { Readable, Writable } = require('stream');
+const readline = require("readline");
+const fs = require("mz/fs");
+const blessed = require("blessed");
+const { Readable, Writable } = require("stream");
 
 module.exports = class TextPrompt extends blessed.box {
   constructor(opts) {
-    super(Object.assign({
-      keyable: true,
-    }, opts));
+    super(
+      Object.assign(
+        {
+          keyable: true,
+        },
+        opts,
+      ),
+    );
     this.screen._listenKeys(this);
 
     if (opts.historyFile) {
-      this._historyWriter = Promise.resolve(fs.open(opts.historyFile, 'a'));
+      this._historyWriter = Promise.resolve(fs.open(opts.historyFile, "a"));
       this._loadHistory(opts.historyFile);
     } else {
       this._historyWriter = Promise.resolve(null);
     }
 
-    let rl_input = new Readable(), rl_output = new Writable();
+    let rl_input = new Readable(),
+      rl_output = new Writable();
     rl_input._read = function noop() {};
     this.rl = readline.createInterface({
       input: rl_input,
@@ -30,15 +36,15 @@ module.exports = class TextPrompt extends blessed.box {
 
     rl_output._write = (chunk, encoding, cb) => cb();
 
-    this.screen.program.input.on('data', (key) => {
+    this.screen.program.input.on("data", key => {
       rl_input.push(key);
       this.setContent(this.rl._prompt + this.rl.line);
       this.screen.render();
     });
 
-    this.rl.on('line', (l) => {
+    this.rl.on("line", l => {
       this._appendHistory(l);
-      this.emit('line', l)
+      this.emit("line", l);
     });
     this.screen.program.showCursor();
     this.setContent(this.rl._prompt);
@@ -73,13 +79,20 @@ module.exports = class TextPrompt extends blessed.box {
   }
 
   _loadHistory(filename) {
-    fs.readFile(filename, 'utf-8').then((data) => this.rl.history = data.split("\n").filter((l) => l.length > 0).reverse());
+    fs.readFile(filename, "utf-8").then(
+      data =>
+        (this.rl.history = data
+          .split("\n")
+          .filter(l => l.length > 0)
+          .reverse()),
+    );
   }
 
   _appendHistory(line) {
-    if (line.length > 0 && line[0] != ' ') {
-      this._historyWriter = this._historyWriter
-        .then((f) => f ? fs.write(f, line + "\n", null, 'utf-8').then(() => f) : null);
+    if (line.length > 0 && line[0] != " ") {
+      this._historyWriter = this._historyWriter.then(
+        f => (f ? fs.write(f, line + "\n", null, "utf-8").then(() => f) : null),
+      );
     }
   }
-}
+};

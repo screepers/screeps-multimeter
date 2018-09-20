@@ -28,6 +28,7 @@
     "html2json": "^1.0.2",
     "lodash": "^3.10.1",
     "mz": "^2.6.0",
+    "prettier": "^1.14.3",
     "printf": "^0.2.5",
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",

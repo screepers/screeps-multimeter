@@ -1,5 +1,5 @@
-const blessed = require('blessed');
-const text_prompt = require('./text_prompt');
+const blessed = require("blessed");
+const text_prompt = require("./text_prompt");
 
 module.exports = class Console extends blessed.element {
   constructor(opts) {
@@ -15,7 +15,7 @@ module.exports = class Console extends blessed.element {
 
     this.inputView = new text_prompt({
       parent: this,
-      top: '100%-1',
+      top: "100%-1",
       left: 0,
       height: 1,
       inputOnFocus: true,
@@ -25,21 +25,21 @@ module.exports = class Console extends blessed.element {
       style: { inverse: true },
     });
 
-    this.inputView.key('escape', (ch, key) => {
-      this.emit('exit');
+    this.inputView.key("escape", (ch, key) => {
+      this.emit("exit");
     });
 
-    this.inputView.key('pageup', (ch, key) => {
+    this.inputView.key("pageup", (ch, key) => {
       this.outputView.scroll(-this.outputView.height + 1);
       this.screen.render();
     });
 
-    this.inputView.key('pagedown', (ch, key) => {
+    this.inputView.key("pagedown", (ch, key) => {
       this.outputView.scroll(this.outputView.height - 1);
       this.screen.render();
     });
 
-    this.inputView.on('line', (l) => this.emit('line', l));
+    this.inputView.on("line", l => this.emit("line", l));
   }
 
   handleComplete(line) {
@@ -55,30 +55,30 @@ module.exports = class Console extends blessed.element {
   }
 
   addLines(type, line) {
-    let event = { type, line }
-    this.emit('addLines',event)
-    line = event.line || line
+    let event = { type, line };
+    this.emit("addLines", event);
+    line = event.line || line;
     line = line.split("\n").join("\n    ");
     if (event.skip) {
       return;
     } else if (event.formatted) {
-      this.outputView.log(line + '{/}');
-    } else if (type == 'system') {
-      this.outputView.log('{bold}*** ' + line + '{/}');
-    } else if (type == 'console') {
-      this.outputView.log('<<< ' + line + '{/}');
-    } else if (type == 'result') {
-      this.outputView.log('>>> ' + line + '{/}');
-    } else if (type == 'error') {
-      this.outputView.log('{red-fg}{bold}!!!{/bold} ' + line + '{/}');
+      this.outputView.log(line + "{/}");
+    } else if (type == "system") {
+      this.outputView.log("{bold}*** " + line + "{/}");
+    } else if (type == "console") {
+      this.outputView.log("<<< " + line + "{/}");
+    } else if (type == "result") {
+      this.outputView.log(">>> " + line + "{/}");
+    } else if (type == "error") {
+      this.outputView.log("{red-fg}{bold}!!!{/bold} " + line + "{/}");
     } else {
-      this.outputView.log('  - ' + line + '{/}');
+      this.outputView.log("  - " + line + "{/}");
     }
 
     this.screen.render();
   }
 
   log(line) {
-    this.addLines('system', line);
+    this.addLines("system", line);
   }
-}
+};
