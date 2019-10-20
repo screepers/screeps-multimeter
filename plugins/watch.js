@@ -19,14 +19,14 @@ module.exports = function(multimeter) {
     if (name == "console") return;
     if (subscriptions.has(name)) return;
     subscriptions.add(name);
-    multimeter.api.subscribe("/memory/watch.values." + name);
+    multimeter.api.socket.subscribe("memory/watch.values." + name);
   }
 
   function unsubscribe(name) {
     if (name == "console") return;
     if (name == "status") setStatusBar(null);
     subscriptions.delete(name);
-    multimeter.api.unsubscribe("/memory/watch.values." + name);
+    multimeter.api.socket.unsubscribe("memory/watch.values." + name);
   }
 
   function errorHandler(err) {
@@ -37,9 +37,9 @@ module.exports = function(multimeter) {
     return multimeter.api.memory
       .get("watch")
       .then(val => {
-        if (typeof val === "object" && typeof val.expressions == "object") {
+        if (typeof val === "object" && val.ok === 1 && typeof val.data.expressions == "object") {
           client_verified = true;
-          return val.expressions;
+          return val.data.expressions;
         } else {
           throw new Error("watch-client.js is not installed or out of date.");
         }
@@ -110,17 +110,12 @@ module.exports = function(multimeter) {
     }
   }
 
-  multimeter.api.on("open", () => {
+  multimeter.api.socket.on("connected", () => {
     subscriptions.clear();
     getWatchExpressions().catch(errorHandler);
 
-    multimeter.api.on("memory", ([path, value]) => {
-      let m = path.match(/\/memory\/watch\.values\.(.*)/);
-      if (m) {
-        if (m[1] == "status") {
-          setStatusBar(value);
-        }
-      }
+    multimeter.api.socket.on("memory/watch.values.status", ({data}) => {
+          setStatusBar(data);
     });
   });
 
