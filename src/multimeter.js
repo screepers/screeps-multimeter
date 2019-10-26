@@ -138,6 +138,7 @@ module.exports = class Multimeter extends EventEmitter {
     this.api = new ScreepsAPI(opts);
 
     this.screen = blessed.screen({
+      fullUnicode: true,
       smartCSR: true,
       title: "Screeps",
     });
