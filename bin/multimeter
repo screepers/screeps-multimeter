@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const configManager = require('../src/config_manager');
-const nux = require('../src/nux');
-const Multimeter = require('../src/multimeter');
+const configManager = require("../src/config_manager");
+const nux = require("../src/nux");
+const Multimeter = require("../src/multimeter");
 
-process.on('unhandledRejection', function (err) {
-    throw err;
+process.on("unhandledRejection", function(err) {
+  throw err;
 });
 
 Promise.resolve(configManager.loadConfig())
@@ -13,13 +13,15 @@ Promise.resolve(configManager.loadConfig())
     if (path) return;
     // No saved config, need to run the NUX.
     return nux();
-  }).then(() => {
+  })
+  .then(() => {
     var app = new Multimeter(configManager);
     app.run();
-    app.on('exit', () => {
+    app.on("exit", () => {
       process.exit(0);
     });
-  }).catch((err) => {
+  })
+  .catch(err => {
     console.error(err);
     process.exit(1);
   });
