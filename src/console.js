@@ -1,5 +1,6 @@
 const blessed = require("blessed");
 const text_prompt = require("./text_prompt");
+const fs = require('fs');
 
 module.exports = class Console extends blessed.element {
   constructor(opts) {
@@ -10,7 +11,7 @@ module.exports = class Console extends blessed.element {
       left: 0,
       bottom: 1,
       scrollback: 5000,
-      tags: true,
+      tags: true
     });
 
     this.inputView = new text_prompt({
@@ -40,6 +41,10 @@ module.exports = class Console extends blessed.element {
     });
 
     this.inputView.on("line", l => this.emit("line", l));
+    
+    if (opts.logFile) {
+      this.logStream = fs.createWriteStream(opts.logFile, {flags:'a'});
+    }
   }
 
   handleComplete(line) {
@@ -58,6 +63,9 @@ module.exports = class Console extends blessed.element {
     let event = { type, line };
     this.emit("addLines", event);
     line = event.line || line;
+    if (this.logStream) {
+      this.logStream.write(line + "\n");
+    }
     line = line.split("\n").join("\n    ");
     if (event.skip) {
       return;

@@ -166,6 +166,7 @@ module.exports = class Multimeter extends EventEmitter {
       right: 0,
       bottom: 0,
       historyFile: ".screeps-multimeter.history",
+      logFile: "screeps.log"
     });
 
     this.console.focus();
