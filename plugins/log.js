@@ -3,15 +3,17 @@ const logFile = fs.createWriteStream("screeps.log", { flags: "a" });
 const errorLogFile = fs.createWriteStream("screeps.errors.log", { flags: "a" });
 
 module.exports = function(multimeter) {
-  let enabled = false;
+  let enabled = multimeter.config.log === "true";
 
   function toggleLogging() {
     if (!enabled) {
       enabled = true;
+      multimeter.config.log = "true";
       multimeter.log("Enabled logging");
     } else {
       enabled = false;
-      multimeter.log("Disabled loggin");
+      multimeter.config.log = "false";
+      multimeter.log("Disabled logging");
     }
   }
 
@@ -21,7 +23,11 @@ module.exports = function(multimeter) {
     if (event.type === "log") {
       logFile.write(msg);
     } else if (event.type === "error") {
-      errorLogFile.write(msg);
+      if (multimeter.config.errorLogFile === "true") {
+        errorLogFile.write(msg);
+      } else {
+        logFile.write(msg);
+      }
     }
   });
 
