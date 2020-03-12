@@ -7,14 +7,15 @@
     "multimeter": "./bin/multimeter"
   },
   "scripts": {
-    "check-prettier":
-      "prettier -l 'plugins/**/*.js' 'src/**/*.js' 'bin/multimeter'"
+    "check-prettier": "prettier -l 'plugins/**/*.js' 'src/**/*.js' 'bin/multimeter'"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CGamesPlay/screeps-multimeter.git"
   },
-  "keywords": ["screeps"],
+  "keywords": [
+    "screeps"
+  ],
   "author": "Ryan Patterson",
   "license": "MIT",
   "bugs": {
