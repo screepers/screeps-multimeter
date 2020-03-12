@@ -110,6 +110,20 @@ Tags may be nested:
 </span>
 
 ```
+### Plugin: Logging
+The logging plugin allows you to log screeps output and error output to a file. To enable logging, add logging to your multimeter config file (screeps-multimeter.json):
+```
+  ...
+  "logFilename": "screeps.log",
+  ...
+```
+
+To log errors to a seperate file, add this to your multimeter config as well:
+```
+  ...
+  "errorLogFilename": "screepsErrors.log",
+  ...
+```
 
 
 ## Contributing
