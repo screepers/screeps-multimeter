@@ -196,7 +196,7 @@ module.exports = class Multimeter extends EventEmitter {
       this.api.socket.subscribe("console", event => {
         const { data } = event;
         if (data.messages) {
-          data.messages.log.forEach(l => this.console.addLines("log", l));
+          data.messages.log.forEach(l => this.console.addLines("log", l, data.shard));
           data.messages.results.forEach(l =>
             this.console.addLines("result", l),
           );
