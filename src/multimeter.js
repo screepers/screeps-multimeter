@@ -119,6 +119,10 @@ module.exports = class Multimeter extends EventEmitter {
         "Usage: /help COMMAND\tFind out the usage for COMMAND.\nUsage: /help        \tList all available commands.",
       handler: this.commandHelp.bind(this),
     });
+    this.addCommand("clear", {
+      description: "Clear the console output.",
+      handler: this.commandClear.bind(this),
+    });
     this.addCommand("reconnect", {
       description: "Force a reconnection.",
       handler: this.commandReconnect.bind(this),
@@ -313,6 +317,10 @@ module.exports = class Multimeter extends EventEmitter {
           ).join("\n"),
       );
     }
+  }
+
+  commandClear() {
+    this.console.clear();
   }
 
   commandReconnect() {

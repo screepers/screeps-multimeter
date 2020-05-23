@@ -54,6 +54,10 @@ module.exports = class Console extends blessed.element {
     this.inputView.focus();
   }
 
+  clear() {
+    this.outputView.setContent('');
+  }
+
   addLines(type, line) {
     let event = { type, line };
     this.emit("addLines", event);
