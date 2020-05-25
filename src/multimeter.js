@@ -123,6 +123,15 @@ module.exports = class Multimeter extends EventEmitter {
       description: "Force a reconnection.",
       handler: this.commandReconnect.bind(this),
     });
+    this.addCommand("shard", {
+      description: "Set or show the destination shard for commands",
+      helpText:
+        "/shard SHARD  Set the destination shard for commands.\n" +
+        "/shard        Show the current selected shard.\n" +
+        "\n" +
+        'If SHARD is a number, it will be prefixed with "shard", so "/shard 2" will set the shard to shard2.',
+      handler: this.commandShard.bind(this),
+    });
     this.addCommand("quit", {
       description: "Exit the program.",
       handler: this.commandQuit.bind(this),
@@ -137,6 +146,7 @@ module.exports = class Multimeter extends EventEmitter {
     if (this.config.port) opts.port = this.config.port;
 
     this.api = new ScreepsAPI(opts);
+    this.shard = this.config.shard;
 
     this.screen = blessed.screen({
       fullUnicode: true,
@@ -254,7 +264,7 @@ module.exports = class Multimeter extends EventEmitter {
       }
     } else if (command.length > 0) {
       this.console.addLines("console", command);
-      if (this.api) this.api.console(command, this.config.shard);
+      if (this.api) this.api.console(command, this.shard);
     }
     this.screen.render();
   }
@@ -317,6 +327,17 @@ module.exports = class Multimeter extends EventEmitter {
 
   commandReconnect() {
     if (this.api.socket.ws) this.api.socket.ws.close();
+  }
+
+  commandShard(args) {
+    if (args.length > 0) {
+      let shard = args[0];
+      if (shard.match(/^[0-9]+$/)) {
+        shard = 'shard' + shard;
+      }
+      this.shard = shard;
+    }
+    this.log("Shard: " + this.shard);
   }
 
   commandQuit() {
