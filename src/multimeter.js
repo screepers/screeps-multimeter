@@ -323,7 +323,7 @@ module.exports = class Multimeter extends EventEmitter {
         "Available commands:\n" +
           _.map(
             list,
-            cmd => "/" + _.padRight(cmd.name, longest) + "  " + cmd.description,
+            cmd => "/" + _.padEnd(cmd.name, longest) + "  " + cmd.description,
           ).join("\n"),
       );
     }
