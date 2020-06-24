@@ -54,10 +54,17 @@ module.exports = class Console extends blessed.element {
     this.inputView.focus();
   }
 
-  addLines(type, line) {
-    let event = { type, line };
+  clear() {
+    this.outputView.setContent('');
+  }
+  
+  addLines(type, line, shard) {
+    let event = { type, line, shard };
     this.emit("addLines", event);
     line = event.line || line;
+    if (shard) {
+        line = "{grey-fg}" + shard + "{/} " + line;
+    }
     line = line.split("\n").join("\n    ");
     if (event.skip) {
       return;

@@ -37,11 +37,11 @@ module.exports = function(multimeter) {
     return multimeter.api.memory
       .get("watch")
       .then(val => {
-        if (typeof val === "object" && val.ok === 1 && typeof val.data.expressions == "object") {
+        if (val && val.ok === 1 && val.data && val.data.expressions) {
           client_verified = true;
           return val.data.expressions;
         } else {
-          throw new Error("watch-client.js is not installed or out of date.");
+          multimeter.log('Watch plugin disabled: watch-client.js is not installed or out of date.');
         }
       })
       .then(expressions => {
