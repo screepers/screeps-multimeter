@@ -14,12 +14,44 @@ Features:
 
 ## Installation
 
+**Note**: You must have Node v10 installed. Earlier and later versions are not
+supported.
+
 ```
 npm install -g screeps-multimeter
 multimeter
 ```
 
 When you run multimeter for the first time, it will ask a few setup questions to get you connected. These settings will be saved to a config file in the current directory.
+
+### Running with docker
+
+If you have docker installed but not node v10 nor nvm, then you can use the included Dockerfile to run multimeter.
+
+However you need to create the files `screeps-multimeter.json` and `.screeps-multimeter.history` beforehand.
+
+```console
+$ sudo docker build -t multimeter .
+... it will build
+$ touch .screeps-multimeter.history
+$ # edit screeps-multimeter.json
+$ docker run --user `id -u`:`id -g` --rm -v $(pwd)/screeps-multimeter.json:/app/screeps-multimeter.json -v $(pwd)/.screeps-multimeter.history:/app/.screeps-multimeter.history -it multimeter
+```
+
+#### Example  `screeps-multimeter.json`
+
+Connect to a locally running server launched with [screeps-launcher](https://github.com/screepers/screeps-launcher).
+
+```json
+{
+  "shard": "shard0",
+  "username": "youruser",
+  "password": "yourpass",
+  "port": "21025",
+  "hostname": "127.0.0.1",
+  "plugins": []
+}
+```
 
 ### Connecting to the official server
 Simply enter your [Screeps API token](http://docs.screeps.com/auth-tokens.html). You will also need to specify the name of the shard to use.
