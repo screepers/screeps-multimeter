@@ -323,7 +323,7 @@ module.exports = class Multimeter extends EventEmitter {
         "Available commands:\n" +
           _.map(
             list,
-            cmd => "/" + _.padEnd(cmd.name, longest) + "  " + cmd.description,
+            cmd => "/" + _.padRight(cmd.name, longest) + "  " + cmd.description,
           ).join("\n"),
       );
     }
@@ -344,8 +344,10 @@ module.exports = class Multimeter extends EventEmitter {
         shard = 'shard' + shard;
       }
       this.shard = shard;
+	  this.config.shard = shard;
+    this.configManager.saveConfig();
     }
-    this.log("Shard: " + this.shard);
+    this.log("Command Shard: " + this.shard);
   }
 
   commandQuit() {
