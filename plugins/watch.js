@@ -16,7 +16,7 @@ const HELP_TEXT_WATCH =
   "/watchshard SHARD   Set the shard used by the Watch plugin.\n" +
   "/watchshard         Show the current selected shard." +
   "\n" +
-  'If SHARD is a number, it will be prefixed with "shard", so "/shard 2" will set the shard to shard2.'
+  'If SHARD is a number, it will be prefixed with "shard", so "/wshard 2" will set the shard to shard2.'
   
 module.exports = function(multimeter) {
   if (!multimeter.config.watchShard) {
