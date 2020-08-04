@@ -145,7 +145,7 @@ module.exports = class Multimeter extends EventEmitter {
   run() {
     var opts = {};
     opts.token = this.config.token;
-    opts.protocol = this.config.token ? "https" : "http";
+    opts.protocol = this.config.token ? "https" : this.config.protocol;
     if (this.config.hostname) opts.hostname = this.config.hostname;
     if (this.config.port) opts.port = this.config.port;
 
@@ -200,7 +200,7 @@ module.exports = class Multimeter extends EventEmitter {
     var authPromise = Promise.resolve();
     if (!this.config.token) {
       authPromise = this.api.auth(this.config.username, this.config.password, {
-        protocol: "http",
+        protocol: this.config.protocol,
         hostname: this.config.hostname,
         port: this.config.port,
       });
