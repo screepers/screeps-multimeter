@@ -132,6 +132,8 @@ If you have feedback, bugs, or feature requests for multimeter, don't hesitate t
 
 Multimeter is built for hacking! The easiest way to add a feature to multimeter is to make a new plugin for it. If you need to change something and it can't be done with a plugin, you can fork multimeter and submit a pull request. Ideally, you can add the necessary hooks so that other plugins can take advantage of them.
 
+Note that multimeter uses lodash 4, whereas screeps still uses lodash 3.
+
 ### Contributors
 
 Multimeter has been built by a collection of users. Github provides a [list of all contributors to the project](https://github.com/screepers/screeps-multimeter/graphs/contributors).
