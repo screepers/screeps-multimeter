@@ -93,7 +93,7 @@ module.exports = function() {
               ),
             )
             .then(config =>
-              prompt(screen, "Enter the protocol(http or https) for the server:").then(protocol =>
+              prompt(screen, "Enter the protocol (http or https) for the server:", "http").then(protocol =>
                 Object.assign({ protocol }, config),
               ),
             )
