@@ -111,7 +111,7 @@ module.exports = function(multimeter) {
           _.map(
             matched,
             c =>
-              _.padRight(c, longest) +
+              _.padEnd(c, longest) +
               "  " +
               multimeter.commands[c.toLowerCase()].description,
           ).join("\n"),
