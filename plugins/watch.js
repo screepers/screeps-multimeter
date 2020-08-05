@@ -10,84 +10,104 @@ const HELP_TEXT =
   "\n" +
   "Target can be 'console', which will cause the result to be logged every tick, or 'status', which will cause the result to be shown in a status bar at the bottom of the screen. There can be separate status and console watches.";
 
-const HELP_TEXT_WATCH =
-  "Set or show the shard used by the Watch plugin." +
-  "\n" +
-  "/watchshard SHARD   Set the shard used by the Watch plugin.\n" +
-  "/watchshard         Show the current selected shard." +
-  "\n" +
-  'If SHARD is a number, it will be prefixed with "shard", so "/wshard 2" will set the shard to shard2.'
-  
 module.exports = function(multimeter) {
-  if (!multimeter.config.watchShard) {
-    multimeter.config.watchShard = multimeter.config.shard;
-    multimeter.configManager.saveConfig();
+  let watchShards = multimeter.config.watchShards || [];
+
+  let status_bar;
+  let shardsVerified = new Set();
+  let subscriptions = new Set();
+  let statusValues = {};
+
+  function subscribe(shard, name) {
+    if (name == "console") return;
+    let endpoint = "memory/" + shard + "/watch.values." + name;
+    if (subscriptions.has(endpoint)) return;
+    subscriptions.add(endpoint);
+    multimeter.api.socket.subscribe(endpoint);
+    if (name == "status") {
+      statusValues[shard] = '';
+      updateStatusBar();
+      if (watchShards.indexOf(shard) == -1) {
+        watchShards.push(shard);
+        watchShards.sort();
+        multimeter.config.watchShards = watchShards;
+        multimeter.configManager.saveConfig();
+      }
+      multimeter.api.socket.on(endpoint, ({data}) => {
+        if (shard in statusValues) {
+          statusValues[shard] = data;
+        }
+        updateStatusBar();
+      });
+    }
   }
 
-  let status_bar,
-    client_verified = false,
-    subscriptions = new Set();
-
-  function subscribe(name) {
+  function unsubscribe(shard, name) {
     if (name == "console") return;
-    if (subscriptions.has(name)) return;
-    subscriptions.add(name);
-    multimeter.api.socket.subscribe("memory/"+multimeter.config.watchShard+"/watch.values." + name);
-  }
-
-  function unsubscribe(name) {
-    if (name == "console") return;
-    if (name == "status") setStatusBar(null);
-    subscriptions.delete(name);
-    multimeter.api.socket.unsubscribe("memory/"+multimeter.config.watchShard+"/watch.values." + name);
+    let endpoint = "memory/" + shard + "/watch.values." + name;
+    if (name == "status") {
+      delete statusValues[shard];
+      updateStatusBar();
+    }
+    subscriptions.delete(endpoint);
+    multimeter.api.socket.unsubscribe(endpoint);
   }
 
   function errorHandler(err) {
     multimeter.log("Cannot watch: " + err.stack);
   }
 
-  function getWatchExpressions() {
+  function getWatchExpressions(shard) {
     return multimeter.api.memory
-      .get("watch", multimeter.config.watchShard)
+      .get("watch", shard)
       .then(val => {
         if (val) {
           if (val.data && val.data.expressions) {
-            client_verified = true;
+            shardsVerified.add(shard);
             return val.data.expressions;
           } else {
-            multimeter.log('Watch plugin disabled: no expressions found for active shard.')
+            multimeter.log('Watch plugin disabled: Missing Memory.watch.expressions for ' + shard + '. Is watch-client.js installed?');
+            return null;
           }
         } else {
-          multimeter.log('Watch plugin disabled: watch-client.js is not installed or out of date.');
+          multimeter.log('Watch plugin disabled: Missing Memory.watch for ' + shard + '. Is watch-client.js installed?');
+          return null;
         }
       })
-      .then(expressions => {
-        _.keys(expressions).forEach(subscribe);
-        return expressions;
-      });
   }
 
   function setWatch(name, expression) {
-    if (!client_verified)
-      return getWatchExpressions().then(setWatch.bind(null, name, expression));
-    if (expression) subscribe(name);
-    else unsubscribe(name);
-    return multimeter.api.memory.set("watch.expressions." + name, expression, multimeter.config.watchShard);
+    let shard = multimeter.shard;
+    if (! shardsVerified.has(shard)) {
+      return getWatchExpressions(shard).then(expressions => {
+        if (expressions) {
+          setWatch(name, expression);
+        }
+      });
+    }
+    if (expression) {
+      subscribe(shard, name);
+    } else {
+      unsubscribe(shard, name);
+    }
+    return multimeter.api.memory.set("watch.expressions." + name, expression, shard);
   }
 
-  function setStatusBar(value) {
-    if (value !== null) {
+  function updateStatusBar() {
+    let shards = Object.keys(statusValues).sort();
+    if (shards.length > 0) {
       if (!status_bar) {
         status_bar = blessed.box({
           parent: multimeter.screen,
-          top: "100%-1",
           left: 0,
-          height: 1,
           tags: true,
         });
-        multimeter.console.position.bottom = 1;
       }
-      status_bar.setContent(value);
+      status_bar.height = shards.length;
+      status_bar.top = '100%-' + shards.length;
+      multimeter.console.position.bottom = shards.length;
+      let text = shards.map(shard => '{grey-fg}' + shard + '{/} ' + statusValues[shard]).join('\n');
+      status_bar.setContent(text);
       multimeter.screen.render();
     } else if (status_bar) {
       status_bar.detach();
@@ -97,39 +117,14 @@ module.exports = function(multimeter) {
     }
   }
 
-  function onShard(shard) {
-    // connects to memory websocket for specified shard; disconnects upon shard change.
-    subscriptions.clear();
-    getWatchExpressions().catch(errorHandler);
-    multimeter.api.socket.on("memory/"+shard+"/watch.values.status", ({data}) => {
-      if (shard === multimeter.config.watchShard) {
-        setStatusBar(data);
-      } else {
-        unsubscribe("status");
-      }
-    });
-  }
-
-  function commandWatchShard(args) {
-    if (args.length > 0) {
-      let shard = args[0];
-      if (shard.match(/^[0-9]+$/)) {
-        shard = 'shard' + shard;
-      }
-    multimeter.config.watchShard = shard;
-    multimeter.configManager.saveConfig();
-    onShard(shard);
-    }
-    multimeter.log("Watch Shard: "+ multimeter.config.watchShard);
-  }
-
   function commandWatch(args) {
     let target = args[0] || "console";
     if (target != "console" && target != "status") {
       multimeter.log("Valid targets are 'console' and 'status'.");
     }
+    let shard = multimeter.shard;
     if (args.length < 2) {
-      getWatchExpressions()
+      getWatchExpressions(shard)
         .then(expressions => {
           if (expressions && expressions[target]) {
             multimeter.log(
@@ -137,14 +132,14 @@ module.exports = function(multimeter) {
               expressions[target].toString(),
             );
           } else {
-            multimeter.log("No current watch.");
+            multimeter.log("No " + target + " watch for " + shard + ".");
           }
         })
         .catch(errorHandler);
     } else if (args[1] == "off") {
       setWatch(target, null)
         .then(() => {
-          multimeter.log("Watch disabled.");
+          multimeter.log(target + " watch disabled for " + shard + ".");
         })
         .catch(errorHandler);
     } else {
@@ -154,18 +149,18 @@ module.exports = function(multimeter) {
   }
 
   multimeter.api.socket.on("connected", () => {
-    onShard(multimeter.config.watchShard);
+    watchShards.forEach(shard => {
+      getWatchExpressions(shard).then(expressions => {
+        if (expressions && expressions.status) {
+          subscribe(shard, "status");
+        }
+      });
+    });
   });
 
   multimeter.addCommand("watch", {
     description: "Log an expression to the console every tick.",
     helpText: HELP_TEXT,
     handler: commandWatch,
-  });
-  
-  multimeter.addCommand("wshard", {
-    description: "Set or show the shard used by the Watch plugin.",
-    helpText: HELP_TEXT_WATCH,
-    handler: commandWatchShard,
   });
 };

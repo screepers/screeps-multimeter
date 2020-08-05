@@ -344,8 +344,6 @@ module.exports = class Multimeter extends EventEmitter {
         shard = 'shard' + shard;
       }
       this.shard = shard;
-	  this.config.shard = shard;
-    this.configManager.saveConfig();
     }
     this.log("Command Shard: " + this.shard);
   }

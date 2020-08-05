@@ -105,7 +105,7 @@ module.exports = function() {
       ),
     )
     .then(config =>
-      prompt(screen, "Enter shard name:", "shard0").then(shard =>
+      prompt(screen, "Enter the default shard name:", "shard0").then(shard =>
         Object.assign({ shard }, config),
       ),
     )
