@@ -1,5 +1,3 @@
-const blessed = require("blessed");
-
 const HELP_TEXT =
   "/pause   Pause the console output.\n" +
   "/unpause Resume the console output.";
@@ -13,26 +11,23 @@ module.exports = function(multimeter) {
     }
   });
 
-  let pausedMessage = blessed.box({
-    parent: multimeter.screen,
-    bottom: 1,
-    height: 1,
-    left: "center",
-    align: "center",
-    width: 20,
-    content: "***** PAUSED *****",
-    bold: true,
-    hidden: true,
+  multimeter.addStatus(function () {
+    if (paused) {
+      return 'PAUSED';
+    }
   });
 
+  function setPaused(value) {
+    paused = !! value;
+    multimeter.updateStatus();
+  }
+
   function commandPause() {
-    paused = true;
-    pausedMessage.show();
+    setPaused(true);
   }
 
   function commandUnpause() {
-    paused = false;
-    pausedMessage.hide();
+    setPaused(false);
   }
 
   multimeter.addCommand("pause", {
