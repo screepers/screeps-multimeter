@@ -25,6 +25,17 @@ module.exports = class Console extends blessed.element {
       style: { inverse: true },
     });
 
+    this.statusView = blessed.text({
+      parent: this.inputView,
+      width: 0,
+      right: 0,
+      align: 'right',
+      content: '',
+      bold: true,
+      bg: 'black',
+      fg: 'red',
+    });
+
     this.inputView.key("escape", (ch, key) => {
       this.emit("exit");
     });
@@ -57,7 +68,7 @@ module.exports = class Console extends blessed.element {
   clear() {
     this.outputView.setContent('');
   }
-  
+
   addLines(type, line, shard) {
     let event = { type, line, shard };
     this.emit("addLines", event);
@@ -83,6 +94,16 @@ module.exports = class Console extends blessed.element {
     }
 
     this.screen.render();
+  }
+
+  setStatus(text) {
+    if (text) {
+      this.statusView.content = '[' + text + ']';
+      this.statusView.width = null;
+    } else {
+      this.statusView.content = '';
+      this.statusView.width = 0;
+    }
   }
 
   log(line) {
