@@ -17,6 +17,7 @@ const BUILTIN_PLUGINS = [
   "../plugins/screeps_console.compat",
   "../plugins/html.js",
   "../plugins/pause",
+  "../plugins/filter",
   "../plugins/log"
 ];
 
