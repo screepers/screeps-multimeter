@@ -1,6 +1,7 @@
 const HELP_TEXT =
   "/pause   Pause the console output.\n" +
-  "/unpause Resume the console output.";
+  "/unpause Resume the console output.\n" +
+  "You can also use the F9 key to pause/unpause";
 
 module.exports = function(multimeter) {
   let paused = false;
@@ -9,6 +10,11 @@ module.exports = function(multimeter) {
     if (paused && event.type == "log") {
       event.skip = true;
     }
+  });
+
+  // Unfortunately we can't capture the pause/break key in a console program
+  multimeter.screen.program.key('f9', () => {
+    setPaused(! paused);
   });
 
   multimeter.addStatus(function () {
