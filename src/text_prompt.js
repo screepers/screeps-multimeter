@@ -3,6 +3,12 @@ const fs = require("mz/fs");
 const blessed = require("blessed");
 const { Readable, Writable } = require("stream");
 
+// Bracketed paste mode start/end markers
+const BPM_START = Buffer.from('\u001b[200~');
+const BPM_END = Buffer.from('\u001b[201~');
+const SHIFT_ENTER = Buffer.from('\u001bOM');
+const ESCAPE = '\u001b';
+
 module.exports = class TextPrompt extends blessed.box {
   constructor(opts) {
     super(
@@ -36,15 +42,85 @@ module.exports = class TextPrompt extends blessed.box {
 
     rl_output._write = (chunk, encoding, cb) => cb();
 
-    this.screen.program.input.on("data", key => {
-      rl_input.push(key);
+    let pasteMode = false;
+    let commandBuffer = null;
+
+    this.screen.program.input.on("data", buffer => {
+      let rawStart = 0; // The start of parsed but unpushed raw input
+      let pos = 0; // Current parser position
+
+      // Return true if the buffer contains the target bytes at the current pos
+      function match(target) {
+        if (buffer.length < pos + target.length) {
+          return false;
+        }
+        return buffer.compare(target, 0, target.length, pos, pos + target.length) == 0;
+      }
+
+      // Flush any input between rawStart and pos, setting rawStart to pos
+      function flush() {
+        if (rawStart == 0 && pos == buffer.length) {
+          rl_input.push(buffer);
+        } else if (pos > rawStart) {
+          rl_input.push(buffer.slice(rawStart, pos));
+        }
+        rawStart = pos;
+      }
+
+      // Flush raw input up to pos and then skip [length] bytes of input
+      function skip(length) {
+        flush();
+        pos += length;
+        rawStart = pos;
+      }
+
+      while (pos < buffer.length) {
+        let index = buffer.indexOf(ESCAPE, pos);
+        if (index == -1) {
+          pos = buffer.length;
+          break;
+        }
+        pos = index;
+        if (match(BPM_START)) {
+          skip(BPM_START.length);
+          pasteMode = true;
+        } else if (match(BPM_END)) {
+          skip(BPM_END.length);
+          pasteMode = false;
+        } else if (match(SHIFT_ENTER)) {
+          skip(SHIFT_ENTER.length);
+          pasteMode = true;
+          rl_input.push('\n');
+          pasteMode = false;
+        } else {
+          pos++;
+        }
+      }
+      // Push any leftover output
+      flush();
+
       this.setContent(this.rl._prompt + this.rl.line);
       this.screen.render();
     });
 
-    this.rl.on("line", l => {
-      this._appendHistory(l);
-      this.emit("line", l);
+    this.rl.on("line", line => {
+      this._appendHistory(line);
+      if (pasteMode) {
+        this.rl.setPrompt('... ');
+        if (! commandBuffer) {
+          commandBuffer = [line];
+        } else {
+          commandBuffer.push(line);
+        }
+      } else {
+        this.rl.setPrompt(opts.prompt);
+        if (commandBuffer) {
+          commandBuffer.push(line);
+          line = commandBuffer.join('\n');
+          commandBuffer = null;
+        }
+        this.emit("line", line);
+      }
     });
     this.screen.program.showCursor();
     this.setContent(this.rl._prompt);

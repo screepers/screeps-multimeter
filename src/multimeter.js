@@ -159,12 +159,20 @@ module.exports = class Multimeter extends EventEmitter {
     });
 
     this.screen.program.key("C-c", () => {
-      process.exit(0);
+      this.emit('exit');
     });
 
     this.screen.program.key("C-l", () => {
       this.screen.alloc();
       this.screen.render();
+    });
+
+    // Enable bracketed paste mode
+    this.screen.program.setMode('?2004h');
+
+    this.on('exit', () => {
+      // Disable bracketed paste mode
+      this.screen.program.setMode('?2004l');
     });
 
     this.gauges = new Gauges({
