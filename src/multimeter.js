@@ -16,6 +16,8 @@ const BUILTIN_PLUGINS = [
   "../plugins/watch",
   "../plugins/screeps_console.compat",
   "../plugins/html.js",
+  "../plugins/pause",
+  "../plugins/filter",
   "../plugins/log"
 ];
 
@@ -112,6 +114,7 @@ module.exports = class Multimeter extends EventEmitter {
     this.commands = {};
     this.cpuLimit = 1;
     this.memoryLimit = 2097152;
+    this.statusHandlers = [];
 
     this.addCommand("help", {
       description: 'List the available commands. Try "/help help".',
@@ -136,6 +139,7 @@ module.exports = class Multimeter extends EventEmitter {
         'If SHARD is a number, it will be prefixed with "shard", so "/shard 2" will set the shard to shard2.',
       handler: this.commandShard.bind(this),
     });
+
     this.addCommand("quit", {
       description: "Exit the program.",
       handler: this.commandQuit.bind(this),
@@ -292,6 +296,25 @@ module.exports = class Multimeter extends EventEmitter {
     } else {
       return [[], line];
     }
+  }
+
+  // Register a function to add a status indicator to the right of the input bar.
+  // Only one status indicator can be shown at a time, so the first one to return a status wins.
+  // Make sure important plugins are defined first (e.g. pause should come before filter).
+  // You should call updateStatus() whenever your plugin status changes.
+  addStatus(fn) {
+    this.statusHandlers.push(fn);
+  }
+
+  updateStatus(fn) {
+    for (let handler of this.statusHandlers) {
+      let status = handler();
+      if (status) {
+        this.console.setStatus(status);
+        return;
+      }
+    }
+    this.console.setStatus(null);
   }
 
   /// Register a slash-command. Config object looks like:
