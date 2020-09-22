@@ -271,6 +271,10 @@ module.exports = class Multimeter extends EventEmitter {
   /// Interpret command as if the user had typed it in the console.
   handleConsoleLine(command) {
     if (command[0] == "/") {
+      command = command.trim();
+      if (command.match(/^\/shard[0-9]+$/)) {
+        command = '/shard ' + command.slice(6);
+      }
       let args = command.slice(1).split(" ");
       let cmd = this.commands[args[0].toLowerCase()];
       if (cmd) {
