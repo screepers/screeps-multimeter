@@ -20,7 +20,7 @@ module.exports = class Console extends blessed.element {
       height: 1,
       inputOnFocus: true,
       completer: this.handleComplete.bind(this),
-      prompt: "<<< ",
+      prompt: opts.shard + "<<< ",
       historyFile: opts.historyFile,
       style: { inverse: true },
     });
@@ -73,20 +73,20 @@ module.exports = class Console extends blessed.element {
     let event = { type, line, shard };
     this.emit("addLines", event);
     line = event.line || line;
-    if (shard) {
-        line = "{grey-fg}" + shard + "{/} " + line;
-    }
+    let shardText = "";
+    if (shard) shardText = "{grey-fg}" + shard + "{/}";
     line = line.split("\n").join("\n    ");
     if (event.skip) {
       return;
     } else if (event.formatted) {
-      this.outputView.log(line + "{/}");
+      if (shardText) shardText += " ";
+      this.outputView.log(shardText + line + "{/}");
     } else if (type == "system") {
       this.outputView.log("{bold}*** " + line + "{/}");
     } else if (type == "console") {
-      this.outputView.log("<<< " + line + "{/}");
+      this.outputView.log(shardText + "<<< " + line + "{/}");
     } else if (type == "result") {
-      this.outputView.log(">>> " + line + "{/}");
+      this.outputView.log(shardText + ">>> " + line + "{/}");
     } else if (type == "error") {
       this.outputView.log("{red-fg}{bold}!!!{/bold} " + line + "{/}");
     } else {
@@ -94,6 +94,10 @@ module.exports = class Console extends blessed.element {
     }
 
     this.screen.render();
+  }
+
+  setShard(shard) {
+    this.inputView.setPrompt(shard + '<<< ');
   }
 
   setStatus(text) {

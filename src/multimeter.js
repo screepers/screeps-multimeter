@@ -193,6 +193,7 @@ module.exports = class Multimeter extends EventEmitter {
       right: 0,
       bottom: 0,
       historyFile: ".screeps-multimeter.history",
+      shard: this.shard,
     });
 
     this.console.focus();
@@ -224,7 +225,7 @@ module.exports = class Multimeter extends EventEmitter {
         if (data.messages) {
           data.messages.log.forEach(l => this.console.addLines("log", l, data.shard));
           data.messages.results.forEach(l =>
-            this.console.addLines("result", l),
+            this.console.addLines("result", l, data.shard),
           );
         }
         if (data.error) this.console.addLines("error", data.error);
@@ -283,7 +284,7 @@ module.exports = class Multimeter extends EventEmitter {
         this.console.log("Invalid command: " + args[0]);
       }
     } else if (command.length > 0) {
-      this.console.addLines("console", command);
+      this.console.addLines("console", command, this.shard);
       if (this.api) this.api.console(command, this.shard);
     }
     this.screen.render();
@@ -379,6 +380,7 @@ module.exports = class Multimeter extends EventEmitter {
         shard = 'shard' + shard;
       }
       this.shard = shard;
+      this.console.setShard(this.shard);
     }
     this.log("Command Shard: " + this.shard);
   }

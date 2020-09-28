@@ -38,7 +38,8 @@ module.exports = class TextPrompt extends blessed.box {
       completer: opts.completer,
       historySize: opts.historySize || 5000,
     });
-    if (opts.prompt) this.rl.setPrompt(opts.prompt);
+    this.prompt = opts.prompt;
+    if (this.prompt) this.rl.setPrompt(this.prompt);
 
     rl_output._write = (chunk, encoding, cb) => cb();
 
@@ -113,7 +114,7 @@ module.exports = class TextPrompt extends blessed.box {
           commandBuffer.push(line);
         }
       } else {
-        this.rl.setPrompt(opts.prompt);
+        this.rl.setPrompt(this.prompt);
         if (commandBuffer) {
           commandBuffer.push(line);
           line = commandBuffer.join('\n');
@@ -124,6 +125,11 @@ module.exports = class TextPrompt extends blessed.box {
     });
     this.screen.program.showCursor();
     this.setContent(this.rl._prompt);
+  }
+
+  setPrompt(prompt) {
+    this.prompt = prompt;
+    this.rl.setPrompt(prompt);
   }
 
   _updateCursor(get) {
