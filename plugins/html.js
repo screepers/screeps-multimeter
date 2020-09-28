@@ -1,4 +1,4 @@
-const htmlparser = require('htmlparser2');
+const parse5 = require('parse5');
 
 module.exports = function(multimeter) {
   multimeter.console.on("addLines", function(event) {
@@ -9,76 +9,64 @@ module.exports = function(multimeter) {
   });
 };
 
-let stack, output;
-let parser = new htmlparser.Parser({
-  onopentag(name, attrs) {
-    let tag = {
-      tag: name,
-      styles: [],
-    };
-    if (attrs.style) {
-      for (let entry of attrs.style.split(';')) {
-        let parts = entry.split(':');
-        if (parts.length >= 2) {
-          let key = parts[0].trim();
-          let value = parts[1].trim();
-          switch (key) {
-            case 'color':
-              tag.styles.push(value + '-fg');
-              break;
-            case 'background':
-              tag.styles.push(value + '-bg');
-              break;
-            case 'font-weight':
-              if (value == 'bold') {
-                tag.styles.push('bold');
-              }
-              break;
-            case 'text-decoration':
-              if (value == 'underline') {
-                tag.styles.push('underline');
-              }
-              break;
+function parseLogHtml(line) {
+  let output = '';
+  let nodes = parse5.parse(line).childNodes[0].childNodes[1].childNodes;
+  function parseStyle(style) {
+    let styles = [];
+    for (let entry of style.split(';')) {
+      let parts = entry.split(':');
+      if (parts.length >= 2) {
+        let key = parts[0].trim();
+        let value = parts[1].trim();
+        switch (key) {
+          case 'color':
+            styles.push(value + '-fg');
+            break;
+          case 'background':
+            styles.push(value + '-bg');
+            break;
+          case 'font-weight':
+            if (value == 'bold') {
+              styles.push('bold');
+            }
+            break;
+          case 'text-decoration':
+            if (value == 'underline') {
+              styles.push('underline');
+            }
+            break;
+        }
+      }
+    }
+    return styles;
+  }
+  function traverseNodes(nodes) {
+    for (let node of nodes) {
+      let styles = null;
+      if (node.attrs) {
+        for (let attr of node.attrs) {
+          if (attr.name == 'style') {
+            styles = parseStyle(attr.value);
+            for (let style of styles) {
+              output += `{${style}}`;
+            }
           }
         }
       }
-      stack.push(tag);
-      for (let style of tag.styles) {
-        output += `{${style}}`;
+      if (node.nodeName == '#text') {
+        output += node.value;
       }
-    }
-  },
-
-  ontext(text) {
-    output += text;
-  },
-
-  onclosetag(name) {
-    // Find the last matching tag
-    let i;
-    for (i = stack.length - 1; i >= 0; i--) {
-      if (stack[i].tag == name) {
-        break;
+      if (node.childNodes) {
+        traverseNodes(node.childNodes);
       }
-    }
-    if (i >= 0) {
-      // Pop this tag and anything nested inside it (even if they haven't been closed yet)
-      while (stack.length > i) {
-        let tag = stack.pop();
-        for (let style of tag.styles.reverse()) {
+      if (styles) {
+        for (let style of styles.reverse()) {
           output += `{/${style}}`;
         }
       }
     }
-  },
-}, {
-  recognizeSelfClosing: true,
-});
-
-function parseLogHtml(line) {
-  stack = [];
-  output = '';
-  parser.write(line);
-  parser.end();
+  }
+  traverseNodes(nodes);
   return output;
 }
