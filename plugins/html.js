@@ -3,7 +3,15 @@ const html2json = require("html2json").html2json;
 module.exports = function(multimeter) {
   multimeter.console.on("addLines", function(event) {
     if (event.type === "log") {
-      event.line = parseLogJson(html2json(event.line));
+      let json;
+      try {
+        json = html2json(event.line);
+      } catch (err) {
+        // ignore
+      }
+      if (json) {
+        event.line = parseLogJson(json);
+      }
       event.formatted = true;
     }
   });
