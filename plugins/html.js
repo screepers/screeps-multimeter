@@ -1,68 +1,84 @@
-const html2json = require("html2json").html2json;
+const htmlparser = require('htmlparser2');
 
 module.exports = function(multimeter) {
   multimeter.console.on("addLines", function(event) {
     if (event.type === "log") {
-      event.line = parseLogJson(html2json(event.line));
+      event.line = parseLogHtml(event.line);
       event.formatted = true;
     }
   });
 };
 
-let parseLogJson = function(obj) {
-  let ret = "",
-    bgColor,
-    color,
-    bold,
-    underline;
-
-  if (obj.attr && obj.attr.style) {
-    let i = obj.attr.style.indexOf("color:");
-    if (i !== -1) {
-      color = `${obj.attr.style[i + 1].replace(/;/g, "")}-fg`;
+let stack, output;
+let parser = new htmlparser.Parser({
+  onopentag(name, attrs) {
+    let tag = {
+      tag: name,
+      styles: [],
+    };
+    if (attrs.style) {
+      for (let entry of attrs.style.split(';')) {
+        let parts = entry.split(':');
+        if (parts.length >= 2) {
+          let key = parts[0].trim();
+          let value = parts[1].trim();
+          switch (key) {
+            case 'color':
+              tag.styles.push(value + '-fg');
+              break;
+            case 'background':
+              tag.styles.push(value + '-bg');
+              break;
+            case 'font-weight':
+              if (value == 'bold') {
+                tag.styles.push('bold');
+              }
+              break;
+            case 'text-decoration':
+              if (value == 'underline') {
+                tag.styles.push('underline');
+              }
+              break;
+          }
+        }
+      }
+      stack.push(tag);
+      for (let style of tag.styles) {
+        output += `{${style}}`;
+      }
     }
+  },
 
-    i = obj.attr.style.indexOf("background:");
-    if (i !== -1) {
-      bgColor = `${obj.attr.style[i + 1].replace(/;/g, "")}-bg`;
+  ontext(text) {
+    output += text;
+  },
+
+  onclosetag(name) {
+    // Find the last matching tag
+    let i;
+    for (i = stack.length - 1; i >= 0; i--) {
+      if (stack[i].tag == name) {
+        break;
+      }
     }
-
-    i = obj.attr.style.indexOf("font-weight:");
-    if (i !== -1) {
-      bold = `${obj.attr.style[i + 1].replace(/;/g, "")}`;
+    if (i >= 0) {
+      // Pop this tag and anything nested inside it (even if they haven't been closed yet)
+      while (stack.length > i) {
+        let tag = stack.pop();
+        for (let style of tag.styles.reverse()) {
+          output += `{/${style}}`;
+        }
+      }
     }
+  },
+}, {
+  recognizeSelfClosing: true,
+});
 
-    i = obj.attr.style.indexOf("text-decoration:");
-    if (i !== -1) {
-      underline = `${obj.attr.style[i + 1].replace(/;/g, "")}`;
-    }
-  }
-
-  if (obj.text) {
-    ret = obj.text;
-  }
-  if (obj.child) {
-    ret = obj.child.reduce(function(acc, child) {
-      acc = acc + parseLogJson(child);
-      return acc;
-    }, ret);
-  }
-
-  if (bold) {
-    ret = `{${bold}}${ret}{/${bold}}`;
-  }
-
-  if (underline) {
-    ret = `{${underline}}${ret}{/${underline}}`;
-  }
-
-  if (color) {
-    ret = `{${color}}${ret}{/${color}}`;
-  }
-
-  if (bgColor) {
-    ret = `{${bgColor}}${ret}{/${bgColor}}`;
-  }
-
-  return ret;
-};
+function parseLogHtml(line) {
+  stack = [];
+  output = '';
+  parser.write(line);
+  parser.end();
+  return output;
+}
