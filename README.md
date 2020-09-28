@@ -142,8 +142,7 @@ Multimeter has been built by a collection of users. Github provides a [list of a
 
 To release a new version:
 
-- Update the version in package.json to `$VERSION` and commit.
-- `git tag v$VERSION`
+- Use `npm version` to update the version in package.json (npm will automatically commit and tag)
 - `git push origin v$VERSION`
 - `npm publish`
 - `open https://github.com/screepers/screeps-multimeter/releases/new?tag=v$VERSION`
