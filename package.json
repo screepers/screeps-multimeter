@@ -34,7 +34,7 @@
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
     "require-relative": "^0.8.7",
-    "screeps-api": "^1.12.2",
+    "screeps-api": "^1.14.0",
     "semver": "^5.3.0"
   },
   "devDependencies": {
