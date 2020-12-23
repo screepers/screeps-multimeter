@@ -148,13 +148,13 @@ module.exports = class Multimeter extends EventEmitter {
 
   run() {
     var opts = {};
-    opts.token = this.config.token;
-    opts.protocol = this.config.token ? "https" : this.config.protocol;
-    if (this.config.hostname) opts.hostname = this.config.hostname;
-    if (this.config.port) opts.port = this.config.port;
+    opts.token = this.config.server.token;
+    opts.protocol = this.config.server.token ? "https" : this.config.server.protocol;
+    if (this.config.server.hostname) opts.hostname = this.config.server.hostname;
+    if (this.config.server.port) opts.port = this.config.server.port;
 
     this.api = new ScreepsAPI(opts);
-    this.shard = this.config.shard;
+    this.shard = this.config.server.defaultShard;
 
     this.screen = blessed.screen({
       fullUnicode: true,
@@ -211,11 +211,11 @@ module.exports = class Multimeter extends EventEmitter {
 
     // We need to get a new token from the server if we don't already have one.
     var authPromise = Promise.resolve();
-    if (!this.config.token) {
-      authPromise = this.api.auth(this.config.username, this.config.password, {
-        protocol: this.config.protocol,
-        hostname: this.config.hostname,
-        port: this.config.port,
+    if (!this.config.server.token) {
+      authPromise = this.api.auth(this.config.server.username, this.config.server.password, {
+        protocol: this.config.server.secure ? 'https' : 'http',
+        hostname: this.config.server.hostname,
+        port: this.config.server.port,
       });
     }
 

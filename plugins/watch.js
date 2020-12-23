@@ -11,7 +11,7 @@ const HELP_TEXT =
   "Target can be 'console', which will cause the result to be logged every tick, or 'status', which will cause the result to be shown in a status bar at the bottom of the screen. There can be separate status and console watches.";
 
 module.exports = function(multimeter) {
-  let watchShards = multimeter.config.watchShards || [];
+  let watchShards = multimeter.config.server.shards || [];
 
   let status_bar;
   let shardsVerified = new Set();
@@ -30,7 +30,7 @@ module.exports = function(multimeter) {
       if (watchShards.indexOf(shard) == -1) {
         watchShards.push(shard);
         watchShards.sort();
-        multimeter.config.watchShards = watchShards;
+        multimeter.config.server.shards = watchShards;
         multimeter.configManager.saveConfig();
       }
       multimeter.api.socket.on(endpoint, ({data}) => {

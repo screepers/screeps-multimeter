@@ -22,7 +22,7 @@ Object.defineProperty(exports, "config", {
   },
 });
 
-exports.loadConfig = async function() {
+async function loadLegacyConfig() {
   let home = homedir();
   let paths = [
     path.resolve("./screeps-multimeter.json"),
@@ -37,6 +37,25 @@ exports.loadConfig = async function() {
       });
     }, Promise.reject());
     let config = JSON.parse(json);
+    // Migration for legacy schema
+    config.server = Object.assign({
+      host: config.hostname,
+      secure: Boolean(config.token || config.protocol == 'https'),
+      port: config.port,
+      token: config.token,
+      username: config.username,
+      password: config.password,
+      defaultShard: config.shard,
+      shards: config.watchShards,
+    }, config.server || {});
+    delete config.hostname;
+    delete config.protocol;
+    delete config.port;
+    delete config.token;
+    delete config.username;
+    delete config.password;
+    delete config.shard;
+    delete config.watchShards;
     globalConfigFilename = filename;
     globalConfig = config;
     return [filename, config];
@@ -46,6 +65,10 @@ exports.loadConfig = async function() {
     }
     throw err;
   }
+}
+
+exports.loadConfig = async function() {
+  return loadLegacyConfig();
 };
 
 exports.saveConfig = async function(filename) {
