@@ -22,7 +22,7 @@ Object.defineProperty(exports, "config", {
   },
 });
 
-exports.loadConfig = function() {
+exports.loadConfig = async function() {
   let home = homedir();
   let paths = [
     path.resolve("./screeps-multimeter.json"),
@@ -30,35 +30,30 @@ exports.loadConfig = function() {
     path.resolve(home, ".config/screeps-multimeter.json"),
     path.resolve(home, ".screeps-multimeter.json"),
   ];
-  return paths
-    .reduce((seq, filename) => {
+  try {
+    let [filename, json] = await paths.reduce((seq, filename) => {
       return seq.catch(() => {
         return fs.readFile(filename, "utf-8").then(json => [filename, json]);
       });
-    }, Promise.reject())
-    .then(([filename, json]) => {
-      let config = JSON.parse(json);
-      globalConfigFilename = filename;
-      globalConfig = config;
-      return [filename, config];
-    })
-    .catch(err => {
-      if (err.code == "ENOENT") {
-        return Promise.resolve([null, {}]);
-      } else {
-        return Promise.reject(err);
-      }
-    });
+    }, Promise.reject());
+    let config = JSON.parse(json);
+    globalConfigFilename = filename;
+    globalConfig = config;
+    return [filename, config];
+  } catch (err) {
+    if (err.code == "ENOENT") {
+      return [null, {}];
+    }
+    throw err;
+  }
 };
 
-exports.saveConfig = function(filename) {
+exports.saveConfig = async function(filename) {
   filename = filename || globalConfigFilename;
   if (!filename) {
-    return Promise.reject(
-      new Error("No filename given and no previous one available"),
-    );
+    throw new Error("No filename given and no previous one available");
   } else if (!globalConfig) {
-    return Promise.reject(new Error("Config not loaded yet"));
+    throw new Error("Config not loaded yet");
   }
   let data = JSON.stringify(globalConfig, null, 2);
   globalConfigFilename = filename;
