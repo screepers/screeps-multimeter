@@ -150,11 +150,12 @@ module.exports = class Multimeter extends EventEmitter {
     var opts = {};
     opts.token = this.config.server.token;
     opts.protocol = this.config.server.token ? "https" : this.config.server.protocol;
-    if (this.config.server.hostname) opts.hostname = this.config.server.hostname;
+    if (this.config.server.host) opts.host = this.config.server.host;
     if (this.config.server.port) opts.port = this.config.server.port;
+    if (this.config.server.path) opts.path = this.config.server.path;
 
     this.api = new ScreepsAPI(opts);
-    this.shard = this.config.server.defaultShard;
+    this.shard = this.config.server.defaultShard || 'shard0';
 
     this.screen = blessed.screen({
       fullUnicode: true,
@@ -201,6 +202,9 @@ module.exports = class Multimeter extends EventEmitter {
 
     this.loadPlugins();
 
+    if (configManager.legacy) {
+      this.console.log(`Using legacy config file ${configManager.filename}. Please migrate to screeps.yaml format.`);
+    }
     this.connect().then(api => {
       this.console.log(MOTD);
     });
