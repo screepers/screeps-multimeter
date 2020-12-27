@@ -1,32 +1,41 @@
 const fs = require("mz/fs");
 const homedir = require("homedir");
 const path = require("path");
-const ConfigManager = require('./ConfigManager').ConfigManager;
+const ConfigManager = require('./ConfigManager');
 
-var globalConfigFilename = null;
-var globalConfig = null;
-var globalConfigLegacy = false;
+let manager = new ConfigManager();
+let _config = null;
 
 Object.defineProperty(exports, "filename", {
   get: () => {
-    if (globalConfigFilename) return globalConfigFilename;
-    throw new Error("Config not loaded yet");
+    if (! _config) {
+      throw new Error("Config not loaded yet");
+    }
+    return _config.filename;
   },
 });
 
 Object.defineProperty(exports, "config", {
   get: () => {
-    if (globalConfig) return globalConfig;
-    throw new Error("Config not loaded yet");
+    if (! _config) {
+      throw new Error("Config not loaded yet");
+    }
+    return _config.config;
   },
   set: value => {
-    globalConfig = value;
+    if (! _config) {
+      _config = {};
+    }
+    _config.config = value;
   },
 });
 
 Object.defineProperty(exports, "legacy", {
   get: () => {
-    return globalConfigLegacy;
+    if (! _config) {
+      throw new Error("Config not loaded yet");
+    }
+    return _config.legacy;
   }
 });
 
@@ -75,7 +84,6 @@ async function loadLegacyConfig() {
 
 async function loadNewConfig() {
   let serverName = 'main';
-  let manager = new ConfigManager();
   let conf = await manager.getConfig();
   let mmConfig = conf.configs && conf.configs.multimeter || {};
   let config = Object.assign({}, mmConfig, {
@@ -87,33 +95,37 @@ async function loadNewConfig() {
 exports.loadConfig = async function() {
   let [filename, config] = await loadLegacyConfig();
   if (filename) {
-    globalConfigFilename = filename;
-    globalConfig = config;
-    globalConfigLegacy = true;
+    _config = {
+      filename,
+      config,
+      legacy: true,
+    };
     return [filename, config]
   }
   [filename, config] = await loadNewConfig();
   if (filename) {
-    globalConfigFilename = filename;
-    globalConfig = config;
+    _config = {
+      filename,
+      config,
+    };
   }
   return [filename, config]
 };
 
 exports.saveConfig = async function(filename) {
   let serverName = 'main';
-  filename = filename || globalConfigFilename;
-  if (!filename) {
-    throw new Error("No filename given and no previous one available");
-  } else if (!globalConfig) {
+  if (! _config) {
     throw new Error("Config not loaded yet");
   }
-  if (! globalConfigLegacy) {
-    let manager = new ConfigManager();
-    await manager.saveConfig(globalConfigFilename, globalConfig, serverName);
+  filename = filename || _config.filename;
+  if (! filename) {
+    throw new Error("No filename given and no previous one available");
+  }
+  _config.filename = filename;
+  if (! _config.legacy) {
+    await manager.saveConfig(_config.filename, _config.config, serverName);
     return;
   }
-  let data = JSON.stringify(globalConfig, null, 2);
-  globalConfigFilename = filename;
-  return fs.writeFile(filename, data, "utf-8");
+  let data = JSON.stringify(_config.config, null, 2);
+  return fs.writeFile(_config.filename, data, "utf-8");
 };

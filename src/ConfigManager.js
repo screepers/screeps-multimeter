@@ -108,4 +108,4 @@ class ConfigManager {
   }
 }
 
-exports.ConfigManager = ConfigManager;
+module.exports = ConfigManager;
