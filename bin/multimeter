@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const configManager = require("../src/config_manager");
-const nux = require("../src/nux");
 const Multimeter = require("../src/multimeter");
 
 process.on("unhandledRejection", function(err) {
@@ -10,9 +9,10 @@ process.on("unhandledRejection", function(err) {
 
 Promise.resolve(configManager.loadConfig())
   .then(([path, config]) => {
-    if (path) return;
-    // No saved config, need to run the NUX.
-    return nux();
+    if (! path) {
+      console.error('No config file found. Please create a .screeps.yaml config file.');
+      process.exit(1);
+    }
   })
   .then(() => {
     var app = new Multimeter(configManager);

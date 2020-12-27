@@ -85,6 +85,9 @@ async function loadLegacyConfig() {
 async function loadNewConfig() {
   let serverName = 'main';
   let conf = await manager.getConfig();
+  if (! conf) {
+    return [null, {}];
+  }
   let mmConfig = conf.configs && conf.configs.multimeter || {};
   let config = Object.assign({}, mmConfig, {
     server: conf.servers && conf.servers[serverName] || {},
