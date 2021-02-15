@@ -130,6 +130,13 @@ module.exports = class Multimeter extends EventEmitter {
       description: "Force a reconnection.",
       handler: this.commandReconnect.bind(this),
     });
+    this.addCommand("server", {
+      description: "Change server",
+      helpText:
+        "/server SERVER Reconnect to the specified server.\n" +
+        "/server        Show the current server name.\n",
+      handler: this.commandServer.bind(this),
+    });
     this.addCommand("shard", {
       description: "Set or show the destination shard for commands",
       helpText:
@@ -147,16 +154,6 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   run() {
-    var opts = {};
-    opts.token = this.config.server.token;
-    opts.protocol = this.config.server.token ? "https" : this.config.server.protocol;
-    if (this.config.server.host) opts.host = this.config.server.host;
-    if (this.config.server.port) opts.port = this.config.server.port;
-    if (this.config.server.path) opts.path = this.config.server.path;
-
-    this.api = new ScreepsAPI(opts);
-    this.shard = this.config.server.defaultShard || 'shard0';
-
     this.screen = blessed.screen({
       fullUnicode: true,
       smartCSR: true,
@@ -200,18 +197,46 @@ module.exports = class Multimeter extends EventEmitter {
     this.console.focus();
     this.console.on("line", this.handleConsoleLine.bind(this));
 
+    this.onDisconnect = () => {
+        this.log("Disconnected. Reconnecting...");
+    };
+
     this.loadPlugins();
 
-    if (configManager.legacy) {
-      this.console.log(`Using legacy config file ${configManager.filename}. Please migrate to screeps.yaml format.`);
-    }
     this.connect().then(api => {
       this.console.log(MOTD);
     });
   }
 
-  connect() {
-    this.console.log(`Connecting to (${this.api.opts.url}) ...`);
+  async connect(serverName) {
+    serverName = serverName || this.configManager.serverName;
+    if (this.config.legacy && serverName != 'main') {
+      this.console.log(`Cannot connect to server "${serverName}" using legacy config file. Please migrate to .screeps.yaml format`);
+      return;
+    }
+    let configManager = this.configManager;
+    if (serverName != this.configManager.serverName) {
+      if (this.api) {
+        this.disconnect();
+      }
+      await this.configManager.loadConfig(serverName);
+    }
+    this.config = this.configManager.config;
+    if (configManager.legacy) {
+      this.console.log(`Using legacy config file ${configManager.filename}. Please migrate to screeps.yaml format.`);
+    }
+
+    var opts = {};
+    opts.token = this.config.server.token;
+    opts.protocol = this.config.server.token ? "https" : this.config.server.protocol;
+    if (this.config.server.host) opts.host = this.config.server.host;
+    if (this.config.server.port) opts.port = this.config.server.port;
+    if (this.config.server.path) opts.path = this.config.server.path;
+
+    this.api = new ScreepsAPI(opts);
+    this.shard = this.config.server.defaultShard || 'shard0';
+
+    this.console.log(`Connecting to ${serverName} (${this.api.opts.url}) ...`);
 
     // We need to get a new token from the server if we don't already have one.
     var authPromise = Promise.resolve();
@@ -249,17 +274,24 @@ module.exports = class Multimeter extends EventEmitter {
         this.log("Code updated");
       });
 
-      this.api.socket.on("disconnected", () => {
-        this.log("Disconnected. Reconnecting...");
-      });
+      this.api.socket.on("disconnected", this.onDisconnect);
 
       this.api.socket.connect().then(() => {
+        // Emit connected event for plugins to use
+        this.emit('connected', this.api);
+
         this.api.me().then(data => {
           this.cpuLimit = data.cpu;
           this.memLimit = 2097152;
         });
       });
     });
+  }
+
+  disconnect() {
+    this.api.socket.removeListener("disconnected", this.onDisconnect);
+    this.api.socket.disconnect();
+    this.api = null;
   }
 
   loadPlugins() {
@@ -375,6 +407,15 @@ module.exports = class Multimeter extends EventEmitter {
 
   commandReconnect() {
     if (this.api.socket.ws) this.api.socket.ws.close();
+  }
+
+  commandServer(args) {
+    if (args.length > 0) {
+      let server = args[0];
+      this.connect(server);
+    } else {
+      this.log("Current server: " + configManager.serverName);
+    }
   }
 
   commandShard(args) {

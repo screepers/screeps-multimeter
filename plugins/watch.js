@@ -11,12 +11,21 @@ const HELP_TEXT =
   "Target can be 'console', which will cause the result to be logged every tick, or 'status', which will cause the result to be shown in a status bar at the bottom of the screen. There can be separate status and console watches.";
 
 module.exports = function(multimeter) {
-  let watchShards = multimeter.config.server.shards || [];
-
   let status_bar;
-  let shardsVerified = new Set();
-  let subscriptions = new Set();
-  let statusValues = {};
+
+  let shardsVerified;
+  let subscriptions;
+  let statusValues;
+  let watchShards;
+  reset();
+
+  function reset() {
+    shardsVerified = new Set();
+    subscriptions = new Set();
+    statusValues = {};
+    watchShards = multimeter.config.server.shards || [];
+    updateStatusBar();
+  }
 
   function subscribe(shard, name) {
     if (name == "console") return;
@@ -117,6 +126,17 @@ module.exports = function(multimeter) {
     }
   }
 
+  multimeter.on('connected', api => {
+    reset();
+    watchShards.forEach(shard => {
+      getWatchExpressions(shard).then(expressions => {
+        if (expressions && expressions.status) {
+          subscribe(shard, "status");
+        }
+      });
+    });
+  });
+
   function commandWatch(args) {
     let target = args[0] || "console";
     if (target != "console" && target != "status") {
@@ -147,16 +167,6 @@ module.exports = function(multimeter) {
       setWatch(target, expr).catch(errorHandler);
     }
   }
-
-  multimeter.api.socket.on("connected", () => {
-    watchShards.forEach(shard => {
-      getWatchExpressions(shard).then(expressions => {
-        if (expressions && expressions.status) {
-          subscribe(shard, "status");
-        }
-      });
-    });
-  });
 
   multimeter.addCommand("watch", {
     description: "Log an expression to the console every tick.",
