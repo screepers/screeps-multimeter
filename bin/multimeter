@@ -1,13 +1,51 @@
 #!/usr/bin/env node
 
+const dashdash = require('dashdash');
 const configManager = require("../src/config_manager");
 const Multimeter = require("../src/multimeter");
+const VERSION = require("../package.json").version;
 
 process.on("unhandledRejection", function(err) {
   throw err;
 });
 
-Promise.resolve(configManager.loadConfig())
+let options = [
+  {
+    name: 'version',
+    type: 'bool',
+    help: 'Print version number and exit.',
+  },
+  {
+    names: ['help', 'h'],
+    type: 'bool',
+    help: 'Print this help and exit.',
+  },
+  {
+    names: ['server', 's'],
+    type: 'string',
+    help: "Which server configuration to use from .screeps.yaml (defaults to 'main').",
+    helpArg: 'SERVERNAME',
+    helpWrap: false,
+  },
+];
+let parser = dashdash.createParser({ options });
+try {
+  var opts = parser.parse(process.argv);
+} catch (err) {
+  console.error('multimeter: error: ' + err.message);
+  process.exit(1);
+}
+
+if (opts.version) {
+  console.log('multimeter ' + VERSION);
+  process.exit(0);
+}
+if (opts.help) {
+  console.log('Usage: multimeter [OPTIONS]\noptions:\n' + parser.help({ includeEnv: true }).trimRight());
+  process.exit(0);
+}
+
+Promise.resolve(configManager.loadConfig(opts.server))
   .then(([path, config]) => {
     if (! path) {
       console.error('No config file found. Please create a .screeps.yaml config file.');

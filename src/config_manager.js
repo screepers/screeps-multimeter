@@ -30,6 +30,15 @@ Object.defineProperty(exports, "config", {
   },
 });
 
+Object.defineProperty(exports, "serverName", {
+  get: () => {
+    if (! _config) {
+      throw new Error("Config not loaded yet");
+    }
+    return _config.serverName;
+  },
+});
+
 Object.defineProperty(exports, "legacy", {
   get: () => {
     if (! _config) {
@@ -82,8 +91,7 @@ async function loadLegacyConfig() {
   }
 }
 
-async function loadNewConfig() {
-  let serverName = 'main';
+async function loadNewConfig(serverName) {
   let conf = await manager.getConfig();
   if (! conf) {
     return [null, {}];
@@ -95,9 +103,13 @@ async function loadNewConfig() {
   return [manager.path, config];
 }
 
-exports.loadConfig = async function() {
+exports.loadConfig = async function(serverName) {
+  // Use legacy config if found
   let [filename, config] = await loadLegacyConfig();
   if (filename) {
+    if (serverName) {
+      throw new Error('Legacy config does not support --server');
+    }
     _config = {
       filename,
       config,
@@ -105,9 +117,12 @@ exports.loadConfig = async function() {
     };
     return [filename, config]
   }
-  [filename, config] = await loadNewConfig();
+  // Load unified config (.screeps.yaml)
+  serverName = serverName || 'main';
+  [filename, config] = await loadNewConfig(serverName);
   if (filename) {
     _config = {
+      serverName,
       filename,
       config,
     };
@@ -115,18 +130,16 @@ exports.loadConfig = async function() {
   return [filename, config]
 };
 
-exports.saveConfig = async function(filename) {
+exports.saveConfig = async function() {
   let serverName = 'main';
   if (! _config) {
     throw new Error("Config not loaded yet");
   }
-  filename = filename || _config.filename;
-  if (! filename) {
+  if (! _config.filename) {
     throw new Error("No filename given and no previous one available");
   }
-  _config.filename = filename;
   if (! _config.legacy) {
-    await manager.saveConfig(_config.filename, _config.config, serverName);
+    await manager.saveConfig(_config.filename, _config.config, _config.serverName);
     return;
   }
   let data = JSON.stringify(_config.config, null, 2);

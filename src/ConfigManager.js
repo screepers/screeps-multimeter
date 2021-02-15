@@ -80,6 +80,11 @@ class ConfigManager {
     }
   }
 
+  /**
+   * Save multimeter-specific settings to config file.
+   * Uses YAML.parseDocument and merges in settings to avoid changing
+   * formatting in the rest of the config file.
+   */
   async saveConfig(file, config, serverName) {
     let content = await readFileAsync(file, 'utf8');
     let doc = YAML.parseDocument(content);

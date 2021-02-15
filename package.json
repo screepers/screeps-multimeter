@@ -25,6 +25,7 @@
   "homepage": "https://github.com/CGamesPlay/screeps-multimeter#readme",
   "dependencies": {
     "blessed": "^0.1.81",
+    "dashdash": "^2.0.0",
     "homedir": "^0.6.0",
     "lodash": "^4.17.13",
     "mz": "^2.6.0",
