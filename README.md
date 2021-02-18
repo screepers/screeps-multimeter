@@ -19,13 +19,59 @@ npm install -g screeps-multimeter
 multimeter
 ```
 
-When you run multimeter for the first time, it will ask a few setup questions to get you connected. These settings will be saved to a config file in the current directory.
+## Configuration
+
+Multimeter now uses the [screeps unified credentials file](https://github.com/screepers/screepers-standards/blob/master/SS3-Unified_Credentials_File.md), as used by [screeps-api](https://github.com/screepers/node-screeps-api).
+
+Example `.screeps.yml` config file:
+
+```
+servers:
+  main:
+    host: screeps.com
+    secure: true
+    token: '00000000-0a0a-0a00-000a-a0000a0000a0'
+    defaultShard: 'shard2'
+    shards: [ shard0, shard1, shard2, shard3 ]
+  ptr:
+    host: screeps.com
+    secure: true
+    path: '/ptr'
+    token: '00000000-0a0a-0a00-000a-a0000a0000a0'
+  season:
+    host: screeps.com
+    secure: true
+    path: '/season'
+    token: '00000000-0a0a-0a00-000a-a0000a0000a0'
+    defaultShard: 'shardSeason'
+    shards: [ shardSeason ]
+  private:
+    host: 127.0.0.1
+    port: 21025
+    secure: false
+    username: bob
+    password: password123
+configs:
+  multimeter:
+    plugins: []
+    aliases: {}
+    logFilename: 'multimeter.log'
+```
+
+Note that multimeter adds two extensions to the official specification:
+
+- `defaultShard` sets the default shard to use for commands after connecting (to send commands to a different shard, use `/shard`)
+- `shards` is used by the watch plugin to track which shards to watch (will be updated automatically when you add a watch command)
 
 ### Connecting to the official server
-Simply enter your [Screeps API token](http://docs.screeps.com/auth-tokens.html). You will also need to specify the name of the shard to use.
+
+You will need to create a [Screeps API token](http://docs.screeps.com/auth-tokens.html) and update the config as appropriate.
 
 ### Connecting to a private server
-Leaving the api token blank and hitting enter will allow you to connect to a private server. You will need to provide the hostname, the port, and your username and password. Your username can either be your username or your email. You can get a password by setting up [screepsmod-auth](https://github.com/ScreepsMods/screepsmod-auth).
+
+To enable access to your own private server you will need to set up [screepsmod-auth](https://github.com/ScreepsMods/screepsmod-auth) and create a password. The username may be your username or email address, depending on the mod settings.
+
+## Usage
 
 The main interface has a command line on the bottom. In type `/help` to see a list of the available commands. Type `/quit` to exit the program.
 
@@ -44,7 +90,15 @@ Colors can be specified as a name, e.g. red, blue, yellow, cyan (see [colorNames
 
 ## Plugins
 
-Multimeter currently ships with these plugins enabled by default. To select which plugins are loaded, edit the `plugins` array in your `screeps-multimeter.json`.
+To add additional plugins, add them to a `plugins` array in your config file:
+
+```
+configs:
+  multimeter:
+    plugins: ["./plugins/myCustomPlugin"]
+```
+
+Multimeter ships with the following plugins enabled by default:
 
 ### Plugin: Alias
 
@@ -79,9 +133,10 @@ There are two ways to watch expressions. You can log it to the console normally 
 
 ### Plugin: HTML
 
-The HTML plugin allows you to style the log output using the 'style' attribute of HTML tags. It converts the values for the style attributes to the relevant blessed tags. It should work with any html tags, though has only been tested with `<div>`, `<span>`, and `<a>`. 
+The HTML plugin allows you to style the log output using the 'style' attribute of HTML tags. It converts the values for the style attributes to the relevant blessed tags. It should work with any html tags, though has only been tested with `<div>`, `<span>`, and `<a>`.
 
-It currently supports: `color`, `background`, `bold`, and `underline`
+It currently supports: `color`, `background`, `bold`, and `underline`:
+
 - Text color: `style="color: #00FFFF;` or `style="color: blue;"`
 - Background: `style="background: #FFFF00;"` or `style="background: green;"`
 - Bold: `style="font-weight: bold;"`
@@ -104,27 +159,29 @@ Tags may be nested:
 
 //The same string, with newlines for visual clarity
 <span style="color: #FF0000;">
-    This is red 
+    This is red
     <span style="color: #00FF00;">This is green </span>
     <span style="text-decoration: underline;">This is red and underlined</span>
 </span>
-
 ```
+
 ### Plugin: Logging
-The logging plugin allows you to log screeps output and error output to a file. To enable logging, add logging to your multimeter config file (screeps-multimeter.json):
+
+The logging plugin allows you to log screeps output and error output to a file. To enable logging, add logging to your config file:
+
 ```
-  ...
-  "logFilename": "screeps.log",
-  ...
+configs:
+  multimeter:
+    logFilename: "multimeter.log"
 ```
 
-To log errors to a seperate file, add this to your multimeter config as well:
-```
-  ...
-  "errorLogFilename": "screepsErrors.log",
-  ...
-```
+To log errors to a separate file, add this to your multimeter config as well:
 
+```
+configs:
+  multimeter:
+    errorLogFilename: "screepsErrors.log"
+```
 
 ## Contributing
 
