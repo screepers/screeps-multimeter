@@ -235,6 +235,7 @@ module.exports = class Multimeter extends EventEmitter {
 
     this.api = new ScreepsAPI(opts);
     this.shard = this.config.server.defaultShard || 'shard0';
+    this.console.setShard(this.shard);
 
     this.console.log(`Connecting to ${serverName} (${this.api.opts.url}) ...`);
 

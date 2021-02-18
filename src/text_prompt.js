@@ -130,6 +130,7 @@ module.exports = class TextPrompt extends blessed.box {
   setPrompt(prompt) {
     this.prompt = prompt;
     this.rl.setPrompt(prompt);
+    this.setContent(this.rl._prompt + this.rl.line);
   }
 
   _updateCursor(get) {
