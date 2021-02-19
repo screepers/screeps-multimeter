@@ -240,47 +240,44 @@ module.exports = class Multimeter extends EventEmitter {
     this.console.log(`Connecting to ${serverName} (${this.api.opts.url}) ...`);
 
     // We need to get a new token from the server if we don't already have one.
-    var authPromise = Promise.resolve();
     if (!this.config.server.token) {
-      authPromise = this.api.auth(this.config.server.username, this.config.server.password);
+      await this.api.auth(this.config.server.username, this.config.server.password);
     }
 
-    return authPromise.then(() => {
-      this.api.socket.subscribe("console", event => {
-        const { data } = event;
-        if (data.messages) {
-          data.messages.log.forEach(l => this.console.addLines("log", l, data.shard));
-          data.messages.results.forEach(l =>
-            this.console.addLines("result", l, data.shard),
-          );
-        }
-        if (data.error) this.console.addLines("error", data.error);
-      });
-
-      this.api.socket.subscribe("cpu", event => {
-        var { data } = event;
-        this.gauges.update(
-          data.cpu,
-          this.cpuLimit,
-          data.memory,
-          this.memoryLimit,
+    this.api.socket.subscribe("console", event => {
+      const { data } = event;
+      if (data.messages) {
+        data.messages.log.forEach(l => this.console.addLines("log", l, data.shard));
+        data.messages.results.forEach(l =>
+          this.console.addLines("result", l, data.shard),
         );
-      });
+      }
+      if (data.error) this.console.addLines("error", data.error);
+    });
 
-      this.api.socket.subscribe("code", msg => {
-        this.log("Code updated");
-      });
+    this.api.socket.subscribe("cpu", event => {
+      var { data } = event;
+      this.gauges.update(
+        data.cpu,
+        this.cpuLimit,
+        data.memory,
+        this.memoryLimit,
+      );
+    });
 
-      this.api.socket.on("disconnected", this.onDisconnect);
+    this.api.socket.subscribe("code", msg => {
+      this.log("Code updated");
+    });
 
-      this.api.socket.connect().then(() => {
-        // Emit connected event for plugins to use
-        this.emit('connected', this.api);
+    this.api.socket.on("disconnected", this.onDisconnect);
 
-        this.api.me().then(data => {
-          this.cpuLimit = data.cpu;
-          this.memLimit = 2097152;
-        });
+    this.api.socket.connect().then(() => {
+      // Emit connected event for plugins to use
+      this.emit('connected', this.api);
+
+      this.api.me().then(data => {
+        this.cpuLimit = data.cpu;
+        this.memLimit = 2097152;
       });
     });
   }
