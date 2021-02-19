@@ -228,7 +228,7 @@ module.exports = class Multimeter extends EventEmitter {
 
     var opts = {};
     opts.token = this.config.server.token;
-    opts.protocol = this.config.server.token ? "https" : this.config.server.protocol;
+    opts.protocol = this.config.server.token ? 'https' : this.config.server.protocol || 'http';
     if (this.config.server.host) opts.hostname = this.config.server.host;
     if (this.config.server.port) opts.port = this.config.server.port;
     if (this.config.server.path) opts.path = this.config.server.path;
