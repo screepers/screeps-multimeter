@@ -229,7 +229,7 @@ module.exports = class Multimeter extends EventEmitter {
     var opts = {};
     opts.token = this.config.server.token;
     opts.protocol = this.config.server.token ? "https" : this.config.server.protocol;
-    if (this.config.server.host) opts.host = this.config.server.host;
+    if (this.config.server.host) opts.hostname = this.config.server.host;
     if (this.config.server.port) opts.port = this.config.server.port;
     if (this.config.server.path) opts.path = this.config.server.path;
 
@@ -242,11 +242,7 @@ module.exports = class Multimeter extends EventEmitter {
     // We need to get a new token from the server if we don't already have one.
     var authPromise = Promise.resolve();
     if (!this.config.server.token) {
-      authPromise = this.api.auth(this.config.server.username, this.config.server.password, {
-        protocol: this.config.server.secure ? 'https' : 'http',
-        hostname: this.config.server.hostname,
-        port: this.config.server.port,
-      });
+      authPromise = this.api.auth(this.config.server.username, this.config.server.password);
     }
 
     return authPromise.then(() => {
