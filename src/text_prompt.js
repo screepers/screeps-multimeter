@@ -12,12 +12,10 @@ const ESCAPE = '\u001b';
 module.exports = class TextPrompt extends blessed.box {
   constructor(opts) {
     super(
-      Object.assign(
-        {
-          keyable: true,
-        },
-        opts,
-      ),
+      Object.assign({
+        keyable: true,
+        wrap: false,
+      }, opts),
     );
     this.screen._listenKeys(this);
 
@@ -100,7 +98,7 @@ module.exports = class TextPrompt extends blessed.box {
       // Push any leftover output
       flush();
 
-      this.setContent(this.rl._prompt + this.rl.line);
+      this.updateDisplay();
       this.screen.render();
     });
 
@@ -124,7 +122,12 @@ module.exports = class TextPrompt extends blessed.box {
       }
     });
     this.screen.program.showCursor();
-    this.setContent(this.rl._prompt);
+    this.hscroll = 0;
+    this.updateDisplay();
+  }
+
+  updateDisplay() {
+    this.setContent(this.rl._prompt + this.rl.line.slice(this.hscroll));
   }
 
   setPrompt(prompt) {
@@ -137,7 +140,15 @@ module.exports = class TextPrompt extends blessed.box {
     let { cols: cx, rows: cy } = this.rl._getCursorPos();
     let pos = this._getPos();
 
-    cx += pos.aleft;
+    // Horizontal scrolling for long input lines
+    let hscroll = Math.max(0, cx - (pos.aleft + pos.width - 1));
+    if (hscroll != this.hscroll) {
+      this.hscroll = hscroll;
+      this.updateDisplay();
+      this.screen.render();
+    }
+
+    cx += pos.aleft - this.hscroll;
     cy += pos.atop;
 
     if (cy === this.screen.program.y && cx === this.screen.program.x) {

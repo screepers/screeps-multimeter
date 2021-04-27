@@ -26,7 +26,8 @@ module.exports = class Console extends blessed.element {
     });
 
     this.statusView = blessed.text({
-      parent: this.inputView,
+      parent: this,
+      top: "100%-1",
       width: 0,
       right: 0,
       align: 'right',
@@ -108,6 +109,7 @@ module.exports = class Console extends blessed.element {
       this.statusView.content = '';
       this.statusView.width = 0;
     }
+    this.inputView.right = this.statusView.content.length;
   }
 
   log(line) {
