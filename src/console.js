@@ -1,10 +1,11 @@
 const blessed = require("blessed");
 const text_prompt = require("./text_prompt");
+const FastLog = require("./FastLog");
 
 module.exports = class Console extends blessed.element {
   constructor(opts) {
     super(opts);
-    this.outputView = blessed.log({
+    this.outputView = new FastLog({
       parent: this,
       top: 0,
       left: 0,
@@ -93,8 +94,6 @@ module.exports = class Console extends blessed.element {
     } else {
       this.outputView.log("  - " + line + "{/}");
     }
-
-    this.screen.render();
   }
 
   setShard(shard) {
