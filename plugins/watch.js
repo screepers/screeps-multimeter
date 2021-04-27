@@ -23,25 +23,29 @@ module.exports = function(multimeter) {
     shardsVerified = new Set();
     subscriptions = new Set();
     statusValues = {};
-    watchShards = multimeter.config.server.shards || [];
+    watchShards = [];
     updateStatusBar();
+  }
+
+  function getMemoryPath(shard, name) {
+    // NOTE: Private servers don't have the shard name in the memory path
+    let path = 'memory';
+    if (shard) {
+      path += '/' + shard;
+    }
+    path += '/watch.values.' + name;
+    return path;
   }
 
   function subscribe(shard, name) {
     if (name == "console") return;
-    let endpoint = "memory/" + shard + "/watch.values." + name;
+    let endpoint = getMemoryPath(shard, name);
     if (subscriptions.has(endpoint)) return;
     subscriptions.add(endpoint);
     multimeter.api.socket.subscribe(endpoint);
     if (name == "status") {
       statusValues[shard] = '';
       updateStatusBar();
-      if (watchShards.indexOf(shard) == -1) {
-        watchShards.push(shard);
-        watchShards.sort();
-        multimeter.config.server.shards = watchShards;
-        multimeter.configManager.saveConfig();
-      }
       multimeter.api.socket.on(endpoint, ({data}) => {
         if (shard in statusValues) {
           statusValues[shard] = data;
@@ -53,7 +57,7 @@ module.exports = function(multimeter) {
 
   function unsubscribe(shard, name) {
     if (name == "console") return;
-    let endpoint = "memory/" + shard + "/watch.values." + name;
+    let endpoint = getMemoryPath(shard, name);
     if (name == "status") {
       delete statusValues[shard];
       updateStatusBar();
@@ -128,6 +132,7 @@ module.exports = function(multimeter) {
 
   multimeter.on('connected', api => {
     reset();
+    watchShards = multimeter.shards;
     watchShards.forEach(shard => {
       getWatchExpressions(shard).then(expressions => {
         if (expressions && expressions.status) {

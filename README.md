@@ -31,8 +31,6 @@ servers:
     host: screeps.com
     secure: true
     token: '00000000-0a0a-0a00-000a-a0000a0000a0'
-    defaultShard: 'shard2'
-    shards: [ shard0, shard1, shard2, shard3 ]
   ptr:
     host: screeps.com
     secure: true
@@ -43,8 +41,6 @@ servers:
     secure: true
     path: '/season'
     token: '00000000-0a0a-0a00-000a-a0000a0000a0'
-    defaultShard: 'shardSeason'
-    shards: [ shardSeason ]
   private:
     host: 127.0.0.1
     port: 21025
@@ -57,11 +53,6 @@ configs:
     aliases: {}
     logFilename: 'multimeter.log'
 ```
-
-Note that multimeter adds two extensions to the official specification:
-
-- `defaultShard` sets the default shard to use for commands after connecting (to send commands to a different shard, use `/shard`)
-- `shards` is used by the watch plugin to track which shards to watch (will be updated automatically when you add a watch command)
 
 ### Connecting to the official server
 

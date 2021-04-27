@@ -115,6 +115,8 @@ module.exports = class Multimeter extends EventEmitter {
     this.cpuLimit = 1;
     this.memoryLimit = 2097152;
     this.statusHandlers = [];
+    this.shard = '';
+    this.shards = [];
 
     this.addCommand("help", {
       description: 'List the available commands. Try "/help help".',
@@ -234,8 +236,6 @@ module.exports = class Multimeter extends EventEmitter {
     if (this.config.server.path) opts.path = this.config.server.path;
 
     this.api = new ScreepsAPI(opts);
-    this.shard = this.config.server.defaultShard || 'shard0';
-    this.console.setShard(this.shard);
 
     this.console.log(`Connecting to ${serverName} (${this.api.opts.url}) ...`);
 
@@ -243,6 +243,25 @@ module.exports = class Multimeter extends EventEmitter {
     if (!this.config.server.token) {
       await this.api.auth(this.config.server.username, this.config.server.password);
     }
+
+    // Automatically detect available shards
+    let userInfo = await this.api.me();
+    if (userInfo.cpuShard) {
+      this.console.log('Found shards: ' + JSON.stringify(userInfo.cpuShard));
+      let shards = Object.keys(userInfo.cpuShard);
+      if (shards.length) {
+        // Default to the shard with the most CPU
+        this.shard = _.maxBy(shards, shard => userInfo.cpuShard[shard]);
+      }
+      // Filter to only shards with CPU allocated
+      this.shards = _.filter(shards, shard => userInfo.cpuShard[shard] > 0);
+    } else {
+      // Private server (no shard names)
+      // NOTE: Uses a different memory path with the shard name omitted entirely
+      this.shard = '';
+      this.shards = [''];
+    }
+    this.console.setShard(this.shard);
 
     this.api.socket.subscribe("console", event => {
       const { data } = event;
