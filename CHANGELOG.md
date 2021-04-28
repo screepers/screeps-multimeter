@@ -6,11 +6,12 @@
 - Bugfix: Fix private server login
 - Bugfix: Watch plugin now works with private servers
 - New feature: Horizontal scrolling for command input
-- New feature: Automatically detect available shards (using auth.me) and select the shard with the most CPU allocated
-  - shards and defaultShard config properties are now deprecated
-- New feature: Support for [screeps unified config](https://github.com/screepers/screepers-standards/blob/master/SS3-Unified_Credentials_File.md) (.screeps.yaml)
-  - Old screeps-multimeter.json config is now deprecated
-  - Use `--server` or `-s` arguments to select which server to connect to
+- New feature: Automatically detects available shards (using `auth.me`)
+  - The default command shard will be the shard with the most CPU allocated
+  - `shards` and `defaultShard` config properties are now deprecated
+- New feature: Support for [screeps unified config](https://github.com/screepers/screepers-standards/blob/master/SS3-Unified_Credentials_File.md) (`.screeps.yaml`)
+  - Old `screeps-multimeter.json` config is now deprecated
+  - Use `--server` or `-s` arguments to select which server to connect to initially (defaults to "main")
   - Use `/server` to switch between servers
 
 ## [1.11.1] - 2020-10-26
