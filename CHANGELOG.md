@@ -5,6 +5,7 @@
 - Bugfix: Improve performance and avoid hanging when there is too much console output
 - Bugfix: Fix private server login
 - Bugfix: Watch plugin now works with private servers
+- Bugfix: Prevent html plugin stripping leading whitespace
 - New feature: Horizontal scrolling for command input
 - New feature: Automatically detects available shards (using `auth.me`)
   - The default command shard will be the shard with the most CPU allocated

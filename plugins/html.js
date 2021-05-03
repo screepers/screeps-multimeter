@@ -11,7 +11,7 @@ module.exports = function(multimeter) {
 
 function parseLogHtml(line) {
   let output = '';
-  let nodes = parse5.parse(line).childNodes[0].childNodes[1].childNodes;
+  let nodes = parse5.parse('<body>' + line + '</body>').childNodes[0].childNodes[1].childNodes;
   function parseStyle(style) {
     let styles = [];
     for (let entry of style.split(';')) {
