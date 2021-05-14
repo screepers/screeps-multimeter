@@ -98,9 +98,6 @@ class ConfigManager {
       serverConfig = doc.createNode({});
       servers.set(serverName, serverConfig);
     }
-    serverConfig.set('defaultShard', config.server.defaultShard);
-    serverConfig.set('shards', doc.createNode(config.server.shards || []));
-    serverConfig.get('shards').type = 'FLOW_SEQ';
     let configs = doc.get('configs');
     if (! configs) {
       configs = doc.createNode({});

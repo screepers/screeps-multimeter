@@ -71,8 +71,6 @@ async function loadLegacyConfig() {
       token: config.token,
       username: config.username,
       password: config.password,
-      defaultShard: config.shard,
-      shards: config.watchShards,
     }, config.server || {});
     delete config.hostname;
     delete config.protocol;
@@ -80,8 +78,6 @@ async function loadLegacyConfig() {
     delete config.token;
     delete config.username;
     delete config.password;
-    delete config.shard;
-    delete config.watchShards;
     return [filename, config];
   } catch (err) {
     if (err.code == "ENOENT") {
