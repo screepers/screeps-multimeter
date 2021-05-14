@@ -8,7 +8,7 @@ const YAML = require('yaml');
 const readFileAsync = util.promisify(fs.readFile)
 const writeFileAsync = util.promisify(fs.writeFile)
 
-class ConfigManager {
+class UnifiedConfig {
   async refresh () {
     this._config = null
     return this.getConfig()
@@ -110,4 +110,4 @@ class ConfigManager {
   }
 }
 
-module.exports = ConfigManager;
+module.exports = UnifiedConfig;

@@ -1,9 +1,10 @@
 const fs = require("mz/fs");
 const homedir = require("homedir");
 const path = require("path");
-const ConfigManager = require('./ConfigManager');
+const UnifiedConfig = require('./UnifiedConfig');
 
-let manager = new ConfigManager();
+// Unified config manager
+let umc = new UnifiedConfig();
 let _config = null;
 
 Object.defineProperty(exports, "filename", {
@@ -88,7 +89,7 @@ async function loadLegacyConfig() {
 }
 
 async function loadNewConfig(serverName) {
-  let conf = await manager.getConfig();
+  let conf = await umc.getConfig();
   if (! conf) {
     return [null, {}];
   }
@@ -100,7 +101,7 @@ async function loadNewConfig(serverName) {
   let config = Object.assign({}, mmConfig, {
     server: serverConfig,
   });
-  return [manager.path, config];
+  return [umc.path, config];
 }
 
 exports.loadConfig = async function(serverName) {
@@ -139,7 +140,7 @@ exports.saveConfig = async function() {
     throw new Error("No filename given and no previous one available");
   }
   if (! _config.legacy) {
-    await manager.saveConfig(_config.filename, _config.config, _config.serverName);
+    await umc.saveConfig(_config.filename, _config.config, _config.serverName);
     return;
   }
   let data = JSON.stringify(_config.config, null, 2);
