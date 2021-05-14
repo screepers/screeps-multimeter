@@ -205,6 +205,10 @@ module.exports = class Multimeter extends EventEmitter {
 
     this.loadPlugins();
 
+    if (this.configManager.legacy) {
+      this.log(`Using legacy config file ${this.configManager.filename}.\nPlease migrate to .screeps.yaml format.`);
+    }
+
     this.connect().then(api => {
       this.console.log(MOTD);
     });
@@ -212,21 +216,13 @@ module.exports = class Multimeter extends EventEmitter {
 
   async connect(serverName) {
     serverName = serverName || this.configManager.serverName;
-    if (this.config.legacy && serverName != 'main') {
-      this.console.log(`Cannot connect to server "${serverName}" using legacy config file. Please migrate to .screeps.yaml format`);
-      return;
-    }
-    let configManager = this.configManager;
     if (serverName != this.configManager.serverName) {
+      await this.configManager.loadConfig(serverName);
       if (this.api) {
         this.disconnect();
       }
-      await this.configManager.loadConfig(serverName);
     }
     this.config = this.configManager.config;
-    if (configManager.legacy) {
-      this.console.log(`Using legacy config file ${configManager.filename}. Please migrate to screeps.yaml format.`);
-    }
 
     var opts = {};
     opts.token = this.config.server.token;
@@ -422,14 +418,18 @@ module.exports = class Multimeter extends EventEmitter {
     if (this.api.socket.ws) this.api.socket.ws.close();
   }
 
-  commandServer(args) {
+  async commandServer(args) {
     if (this.configManager.legacy) {
       this.log('Error: Legacy config does not support /server');
       return;
     }
     if (args.length > 0) {
       let server = args[0];
-      this.connect(server);
+      try {
+        await this.connect(server);
+      } catch (err) {
+        this.log('Error: ' + err.message);
+      }
     } else {
       this.log("Current server: " + configManager.serverName);
     }

@@ -92,9 +92,13 @@ async function loadNewConfig(serverName) {
   if (! conf) {
     return [null, {}];
   }
+  let serverConfig = conf.servers && conf.servers[serverName];
+  if (! serverConfig) {
+    throw new Error(`No config for server ${serverName}`);
+  }
   let mmConfig = conf.configs && conf.configs.multimeter || {};
   let config = Object.assign({}, mmConfig, {
-    server: conf.servers && conf.servers[serverName] || {},
+    server: serverConfig,
   });
   return [manager.path, config];
 }
