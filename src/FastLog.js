@@ -42,6 +42,11 @@ module.exports = class FastLog extends blessed.Box {
   log(...args) {
     let text = util.format(...args);
     this.emit('log', text);
+    if (! this.content) {
+      // Bugfix: pushLine works with an array, but not if it's empty
+      this.pushLine(text);
+      return;
+    }
     for (let line of text.split('\n')) {
       this.pendingLines.push(line);
     }
