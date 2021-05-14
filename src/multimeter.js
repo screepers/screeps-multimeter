@@ -251,13 +251,15 @@ module.exports = class Multimeter extends EventEmitter {
       }
       // Filter to only shards with CPU allocated
       this.shards = _.filter(shards, shard => userInfo.cpuShard[shard] > 0);
+      this.console.setShard(this.shard);
     } else {
       // Private server (no shard names)
       // NOTE: Uses a different memory path with the shard name omitted entirely
       this.shard = '';
       this.shards = [''];
+      // Show server name instead
+      this.console.setShard(`[${serverName}]`);
     }
-    this.console.setShard(this.shard);
 
     this.api.socket.subscribe("console", event => {
       const { data } = event;
