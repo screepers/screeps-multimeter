@@ -423,6 +423,10 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   commandServer(args) {
+    if (this.configManager.legacy) {
+      this.log('Error: Legacy config does not support /server');
+      return;
+    }
     if (args.length > 0) {
       let server = args[0];
       this.connect(server);
