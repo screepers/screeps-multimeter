@@ -45,21 +45,20 @@ if (opts.help) {
   process.exit(0);
 }
 
-Promise.resolve(configManager.loadConfig(opts.server))
-  .then(([path, config]) => {
-    if (! path) {
-      console.error('No config file found. Please create a .screeps.yaml config file.');
-      process.exit(1);
-    }
-  })
-  .then(() => {
-    var app = new Multimeter(configManager);
-    app.run();
-    app.on("exit", () => {
-      process.exit(0);
-    });
-  })
-  .catch(err => {
-    console.error(err);
+async function main() {
+  let [path, config] = await configManager.loadConfig(opts.server);
+  if (! path) {
+    console.error('No config file found. Please create a .screeps.yaml config file.');
     process.exit(1);
+  }
+  let app = new Multimeter(configManager);
+  app.run();
+  app.on("exit", () => {
+    process.exit(0);
   });
+}
+
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
