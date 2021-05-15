@@ -205,10 +205,6 @@ module.exports = class Multimeter extends EventEmitter {
 
     this.loadPlugins();
 
-    if (this.configManager.legacy) {
-      this.log(`Using legacy config file ${this.configManager.filename}.\nPlease migrate to .screeps.yaml format.`);
-    }
-
     this.connect().then(api => {
       this.console.log(MOTD);
     });
@@ -421,10 +417,6 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   async commandServer(args) {
-    if (this.configManager.legacy) {
-      this.log('Error: Legacy config does not support /server');
-      return;
-    }
     if (args.length > 0) {
       let server = args[0];
       try {

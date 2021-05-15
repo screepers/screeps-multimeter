@@ -3,6 +3,7 @@
 const dashdash = require('dashdash');
 const configManager = require("../src/config_manager");
 const Multimeter = require("../src/multimeter");
+const setup = require('../src/setup');
 const VERSION = require("../package.json").version;
 
 process.on("unhandledRejection", function(err) {
@@ -46,6 +47,8 @@ if (opts.help) {
 }
 
 async function main() {
+  await setup();
+
   let [path, config] = await configManager.loadConfig(opts.server);
   if (! path) {
     console.error('No config file found. Please create a .screeps.yaml config file.');

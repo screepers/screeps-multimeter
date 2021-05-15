@@ -81,23 +81,31 @@ class UnifiedConfig {
   }
 
   /**
+   * Create a new config file.
+   */
+  async createConfig(file, config) {
+    let serverConfig = config.server;
+    let mmConfig = Object.assign({}, config);
+    delete mmConfig.server;
+    let root = {
+      servers: {
+        main: config.server,
+      },
+      configs: {
+        multimeter: mmConfig,
+      }
+    };
+    await writeFileAsync(file, YAML.stringify(root));
+  }
+
+  /**
    * Save multimeter-specific settings to config file.
    * Uses YAML.parseDocument and merges in settings to avoid changing
    * formatting in the rest of the config file.
    */
-  async saveConfig(file, config, serverName) {
+  async saveConfig(file, config) {
     let content = await readFileAsync(file, 'utf8');
     let doc = YAML.parseDocument(content);
-    let servers = doc.get('servers');
-    if (! servers) {
-      servers = doc.createNode({});
-      doc.set('servers', servers);
-    }
-    let serverConfig = servers.get(serverName);
-    if (! serverConfig) {
-      serverConfig = doc.createNode({});
-      servers.set(serverName, serverConfig);
-    }
     let configs = doc.get('configs');
     if (! configs) {
       configs = doc.createNode({});

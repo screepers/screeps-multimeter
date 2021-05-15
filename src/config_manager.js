@@ -1,6 +1,3 @@
-const fs = require("mz/fs");
-const homedir = require("homedir");
-const path = require("path");
 const UnifiedConfig = require('./UnifiedConfig');
 
 // Unified config manager
@@ -40,63 +37,8 @@ Object.defineProperty(exports, "serverName", {
   },
 });
 
-Object.defineProperty(exports, "legacy", {
-  get: () => {
-    if (! _config) {
-      throw new Error("Config not loaded yet");
-    }
-    return _config.legacy;
-  }
-});
-
-async function loadLegacyConfig() {
-  let home = homedir();
-  let paths = [
-    "screeps-multimeter.json",
-    path.resolve(home, ".config/screeps-multimeter/config.json"),
-    path.resolve(home, ".config/screeps-multimeter.json"),
-    path.resolve(home, ".screeps-multimeter.json"),
-  ];
-  try {
-    let [filename, json] = await paths.reduce((seq, filename) => {
-      return seq.catch(() => {
-        return fs.readFile(filename, "utf-8").then(json => [filename, json]);
-      });
-    }, Promise.reject());
-
-    let config = JSON.parse(json);
-
-    // Migrate legacy schema
-    config.server = Object.assign({
-      host: config.hostname || 'screeps.com',
-      secure: Boolean(config.token || config.protocol == 'https'),
-      port: config.port,
-      token: config.token,
-      username: config.username,
-      password: config.password,
-    }, config.server || {});
-    delete config.hostname;
-    delete config.protocol;
-    delete config.port;
-    delete config.token;
-    delete config.username;
-    delete config.password;
-
-    // Delete deprecated config
-    delete config.watchShard;
-    delete config.watchShards;
-    delete config.shard;
-
-    return [filename, config];
-  } catch (err) {
-    if (err.code == "ENOENT") {
-      return [null, {}];
-    }
-    throw err;
-  }
-}
-
-async function loadNewConfig(serverName) {
+exports.loadConfig = async function(serverName) {
+  serverName = serverName || 'main';
   let conf = await umc.getConfig();
   if (! conf) {
     return [null, {}];
@@ -109,48 +51,21 @@ async function loadNewConfig(serverName) {
   let config = Object.assign({}, mmConfig, {
     server: serverConfig,
   });
-  return [umc.path, config];
+  let filename = umc.path;
+  _config = {
+    serverName,
+    filename,
+    config,
+  };
+  return [filename, config];
 }
 
-exports.loadConfig = async function(serverName) {
-  // Use legacy config if found
-  let [filename, config] = await loadLegacyConfig();
-  if (filename) {
-    if (serverName) {
-      throw new Error('Legacy config does not support --server');
-    }
-    _config = {
-      filename,
-      config,
-      legacy: true,
-    };
-    return [filename, config]
-  }
-  // Load unified config (.screeps.yaml)
-  serverName = serverName || 'main';
-  [filename, config] = await loadNewConfig(serverName);
-  if (filename) {
-    _config = {
-      serverName,
-      filename,
-      config,
-    };
-  }
-  return [filename, config]
-};
-
-exports.saveConfig = async function() {
-  let serverName = 'main';
+exports.saveConfig = async function () {
   if (! _config) {
     throw new Error("Config not loaded yet");
   }
   if (! _config.filename) {
     throw new Error("No filename given and no previous one available");
   }
-  if (! _config.legacy) {
-    await umc.saveConfig(_config.filename, _config.config, _config.serverName);
-    return;
-  }
-  let data = JSON.stringify(_config.config, null, 2);
-  return fs.writeFile(_config.filename, data, "utf-8");
+  await umc.saveConfig(_config.filename, _config.config);
 };
