@@ -52,7 +52,7 @@ Object.defineProperty(exports, "legacy", {
 async function loadLegacyConfig() {
   let home = homedir();
   let paths = [
-    path.resolve("./screeps-multimeter.json"),
+    "screeps-multimeter.json",
     path.resolve(home, ".config/screeps-multimeter/config.json"),
     path.resolve(home, ".config/screeps-multimeter.json"),
     path.resolve(home, ".screeps-multimeter.json"),
@@ -63,10 +63,12 @@ async function loadLegacyConfig() {
         return fs.readFile(filename, "utf-8").then(json => [filename, json]);
       });
     }, Promise.reject());
+
     let config = JSON.parse(json);
-    // Migration for legacy schema
+
+    // Migrate legacy schema
     config.server = Object.assign({
-      host: config.hostname,
+      host: config.hostname || 'screeps.com',
       secure: Boolean(config.token || config.protocol == 'https'),
       port: config.port,
       token: config.token,
@@ -79,6 +81,12 @@ async function loadLegacyConfig() {
     delete config.token;
     delete config.username;
     delete config.password;
+
+    // Delete deprecated config
+    delete config.watchShard;
+    delete config.watchShards;
+    delete config.shard;
+
     return [filename, config];
   } catch (err) {
     if (err.code == "ENOENT") {
