@@ -64,7 +64,7 @@ To enable access to your own private server you will need to set up [screepsmod-
 
 ## Usage
 
-The main interface has a command line on the bottom. In type `/help` to see a list of the available commands. Type `/quit` to exit the program.
+The main interface has a command line on the bottom. Type `/help` to see a list of the available commands. Type `/quit` to exit the program.
 
 ## Colors and Formatting
 
@@ -121,6 +121,8 @@ exports.loop = function() {
 ```
 
 There are two ways to watch expressions. You can log it to the console normally by using `/watch console EXPR`. You can also log to a status bar at the bottom of the screen using `/watch status EXPR`. For example, `/watch status _.keys(Game.creeps).length` will keep a count of the number of live creeps at the bottom of the terminal.
+
+The watch plugin will be automatically enabled for all shards with assigned CPU > 0.
 
 ### Plugin: HTML
 
