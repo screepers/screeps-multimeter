@@ -192,6 +192,7 @@ Multimeter has been built by a collection of users. Github provides a [list of a
 
 To release a new version:
 
+- Update CHANGELOG.md
 - Use `npm version` to update the version in package.json (npm will automatically commit and tag)
 - `git push origin v$VERSION`
 - `npm publish`

@@ -9,9 +9,9 @@
 - New feature: Horizontal scrolling for command input
 - New feature: Automatically detects available shards (using `auth.me`)
   - The default command shard will be the shard with the most CPU allocated
-  - `shards` and `defaultShard` config properties are now deprecated
+  - `shard` and `watchShards` config properties are no longer required
 - New feature: Support for [screeps unified config](https://github.com/screepers/screepers-standards/blob/master/SS3-Unified_Credentials_File.md) (`.screeps.yaml`)
-  - Old `screeps-multimeter.json` config is now deprecated
+  - Old `screeps-multimeter.json` config is now deprecated (will attempt to migrate automatically)
   - Use `--server` or `-s` arguments to select which server to connect to initially (defaults to "main")
   - Use `/server` to switch between servers
 
