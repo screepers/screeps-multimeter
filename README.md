@@ -23,7 +23,7 @@ multimeter
 
 Multimeter now uses the [screeps unified credentials file](https://github.com/screepers/screepers-standards/blob/master/SS3-Unified_Credentials_File.md), as used by [screeps-api](https://github.com/screepers/node-screeps-api).
 
-Example `.screeps.yml` config file:
+Example `.screeps.yaml` config file:
 
 ```
 servers:
