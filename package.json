@@ -31,7 +31,7 @@
     "mz": "^2.6.0",
     "parse5": "^6.0.1",
     "prettier": "^1.14.3",
-    "printf": "^0.2.5",
+    "printf": "^0.6.1",
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
     "require-relative": "^0.8.7",
