@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1] - 2021-05-20
+
+- Bugfix: Fix output line-wrapping
+
 ## [2.0.0] - 2021-05-16
 
 - Bugfix: Improve performance and avoid hanging when there is too much console output

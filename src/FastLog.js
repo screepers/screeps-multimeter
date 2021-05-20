@@ -12,7 +12,7 @@ module.exports = class FastLog extends blessed.Box {
         scrollable: true,
         alwaysScroll: true,
         keyable: true,
-        wrap: false,
+        wrap: true,
       }, opts),
     );
 
