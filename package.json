@@ -1,6 +1,6 @@
 {
   "name": "screeps-multimeter",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "The most useful tool on your screeps workbench.",
   "main": "index.js",
   "bin": {

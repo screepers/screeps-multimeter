@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.2] - 2021-05-26
+
+- Bugfix: Fix secure config option
+
 ## [2.0.1] - 2021-05-20
 
 - Bugfix: Fix output line-wrapping
