@@ -77,7 +77,17 @@ module.exports = class Console extends blessed.element {
     line = event.line || line;
     let shardText = "";
     if (shard) shardText = "{grey-fg}" + shard + "{/}";
-    line = line.split("\n").join("\n    ");
+    const TABSIZE = 8; // screeps web console is 8 spaces
+    line = line.split("\n").map(line => {
+      // Convert tabs here so we can align the correctly
+      let inserted = 0;
+      return line.replace(/\t/g, function (m, offset, str) {
+        let count = TABSIZE - (offset + inserted) % TABSIZE;
+        inserted += count - 1;
+        return ' '.repeat(count);
+      });
+    }).join("\n    ");
+
     if (event.skip) {
       return;
     } else if (event.formatted) {
