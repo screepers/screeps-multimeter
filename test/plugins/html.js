@@ -11,9 +11,9 @@ let mmStub = {
 };
 HtmlPlugin(mmStub);
 
-function compare(input, expected) {
+function compare(input, expected, eventType = 'log') {
   let event = {
-    type: 'log',
+    type: eventType,
     line: input,
   };
   listener(event);
@@ -67,5 +67,13 @@ describe('html plugin', function () {
     compare('A < B and B > C', 'A < B and B > C');
     compare('foo < bar <span>C</span>', 'foo < bar C');
     compare('foo<<span>bar</span>', 'foo<bar');
+  });
+
+  it('should parse result line', function () {
+    compare(
+      'A<div style="color:red">B<span style="font-weight:bold">C</div>D',
+      'A{red-fg}B{bold}C{/bold}{/red-fg}D',
+      'result'
+    );
   });
 });

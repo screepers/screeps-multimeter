@@ -2,7 +2,7 @@ const parse5 = require('parse5');
 
 module.exports = function(multimeter) {
   multimeter.console.on("addLines", function(event) {
-    if (event.type === "log") {
+    if (event.type === "log" || event.type === "result") {
       event.line = parseLogHtml(event.line);
       event.formatted = true;
     }
