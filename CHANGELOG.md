@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.4] - 2021-06-20
+
+- Bugfix: Change HTML plugin to parse command results as well as log lines (thanks @HoPGoldy)
+
 ## [2.0.3] - 2021-06-19
 
 - Bugfix: Align tabs properly to match screeps web console
