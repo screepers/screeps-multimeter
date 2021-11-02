@@ -222,7 +222,7 @@ module.exports = class Multimeter extends EventEmitter {
 
     // TODO: Use ScreepsAPI.fromConfig instead?
     var opts = {};
-    opts.token = this.config.server.token;
+    opts.token = this.config.server.token || process.env.SCREEPS_TOKEN;
     opts.protocol = this.config.server.secure ? 'https' : 'http';
     if (this.config.server.host) opts.hostname = this.config.server.host;
     if (this.config.server.port) opts.port = this.config.server.port;
@@ -233,7 +233,7 @@ module.exports = class Multimeter extends EventEmitter {
     this.console.log(`Connecting to ${serverName} (${this.api.opts.url}) ...`);
 
     // We need to get a new token from the server if we don't already have one.
-    if (!this.config.server.token) {
+    if (!opts.token) {
       await this.api.auth(this.config.server.username, this.config.server.password);
     }
 
