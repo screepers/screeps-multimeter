@@ -52,6 +52,7 @@ configs:
     plugins: []
     aliases: {}
     logFilename: 'multimeter.log'
+    json: false
 ```
 
 ### Connecting to the official server
@@ -175,6 +176,19 @@ configs:
   multimeter:
     errorLogFilename: "screepsErrors.log"
 ```
+
+### Plugin: json
+
+When the log line is a JSON it will format it like readable JSON.
+
+Default setting for this plugin:
+```
+configs:
+  multimeter:
+    json: false
+```
+
+To enable change to `true`
 
 ## Contributing
 

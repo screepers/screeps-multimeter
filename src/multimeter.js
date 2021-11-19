@@ -18,7 +18,8 @@ const BUILTIN_PLUGINS = [
   "../plugins/html.js",
   "../plugins/pause",
   "../plugins/filter",
-  "../plugins/log"
+  "../plugins/log",
+  "../plugins/json"
 ];
 
 class Gauges extends blessed.layout {
