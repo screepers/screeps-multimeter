@@ -27,12 +27,12 @@ function parseLogHtml(line) {
             styles.push(value + '-bg');
             break;
           case 'font-weight':
-            if (value == 'bold') {
+            if (value === 'bold') {
               styles.push('bold');
             }
             break;
           case 'text-decoration':
-            if (value == 'underline') {
+            if (value === 'underline') {
               styles.push('underline');
             }
             break;
@@ -46,7 +46,7 @@ function parseLogHtml(line) {
       let styles = null;
       if (node.attrs) {
         for (let attr of node.attrs) {
-          if (attr.name == 'style') {
+          if (attr.name === 'style') {
             styles = parseStyle(attr.value);
             for (let style of styles) {
               output += `{${style}}`;
@@ -54,7 +54,7 @@ function parseLogHtml(line) {
           }
         }
       }
-      if (node.nodeName == '#text') {
+      if (node.nodeName === '#text') {
         output += node.value;
       }
       if (node.childNodes) {

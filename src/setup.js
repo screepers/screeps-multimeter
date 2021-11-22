@@ -56,7 +56,7 @@ async function loadLegacyConfig() {
     // Migrate legacy schema
     config.server = Object.assign({
       host: config.hostname || 'screeps.com',
-      secure: Boolean(config.token || config.protocol == 'https'),
+      secure: Boolean(config.token || config.protocol === 'https'),
       port: config.port,
       token: config.token,
       username: config.username,
@@ -76,7 +76,7 @@ async function loadLegacyConfig() {
 
     return [filename, config];
   } catch (err) {
-    if (err.code == "ENOENT") {
+    if (err.code === "ENOENT") {
       return [null, {}];
     }
     throw err;

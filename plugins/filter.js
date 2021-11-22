@@ -9,7 +9,7 @@ module.exports = function(multimeter) {
   let filterCount = 0;
 
   multimeter.console.on("addLines", function(event) {
-    if (filterString && event.type == "log") {
+    if (filterString && event.type === "log") {
       let line = event.shard + ' ' + event.line;
       if (! line.includes(filterString)) {
         event.skip = true;
@@ -26,7 +26,7 @@ module.exports = function(multimeter) {
   });
 
   function commandFilter(args) {
-    if (args.length == 0) {
+    if (args.length === 0) {
       filterString = null;
     } else {
       filterString = args.join(' ');

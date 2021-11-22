@@ -50,7 +50,7 @@ module.exports = function(multimeter) {
   Promise.resolve(checkForUpdates())
     .then(res => {
       release = res;
-      if (res.current != res.latest) {
+      if (res.current !== res.latest) {
         multimeter.log(banner() + " Use /version for more information.");
       }
     })
@@ -62,7 +62,7 @@ module.exports = function(multimeter) {
     description: "Multimeter version information.",
     handler: () => {
       if (release) {
-        if (release.current != release.latest) {
+        if (release.current !== release.latest) {
           multimeter.log(
             banner() +
               "\n\n" +
