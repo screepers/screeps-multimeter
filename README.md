@@ -55,6 +55,7 @@ configs:
 ```
 
 ### Environment Variable
+
 You can also set `SCREEPS_TOKEN` as an environment variable instead of adding the token in the yaml file. If set, the token from the yaml file will take precedence over the environment variable.
 
 This can be useful if you want to commit your `.screeps.yaml` to a repo, but don't want your TOKEN exposed.

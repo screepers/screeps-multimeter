@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2021-11-22
+
+- New feature: Allow passing the token via `SCREEPS_TOKEN` environment variable (thanks @matheusvellone)
+
 ## [2.0.4] - 2021-06-20
 
 - Bugfix: Change HTML plugin to parse command results as well as log lines (thanks @HoPGoldy)
