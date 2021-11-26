@@ -64,7 +64,7 @@ To enable access to your own private server you will need to set up [screepsmod-
 
 ## Usage
 
-The main interface has a command line on the bottom. Type `/help` to see a list of the available commands. Type `/quit` to exit the program.
+The main interface has a command line on the bottom. Type `/help` to see a list of the available commands. Type `/quit` or `/q` to exit the program.
 
 ## Colors and Formatting
 
