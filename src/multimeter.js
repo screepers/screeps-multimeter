@@ -149,15 +149,13 @@ module.exports = class Multimeter extends EventEmitter {
       handler: this.commandShard.bind(this),
     });
 
-    this.addCommand("quit", {
+    const quitCommandConfig = {
       description: "Exit the program.",
       handler: this.commandQuit.bind(this),
-    });
+    }
 
-    this.addCommand("q", {
-      description: "Exit the program.",
-      handler: this.commandQuit.bind(this),
-    });
+    this.addCommand("quit", quitCommandConfig);
+    this.addCommand("q", quitCommandConfig);
   }
 
   run() {
