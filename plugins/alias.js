@@ -31,7 +31,7 @@ module.exports = function(multimeter) {
   }
 
   function delAlias(name) {
-    name = _.find(_.keys(aliases), a => a.toLowerCase() == name.toLowerCase());
+    name = _.find(_.keys(aliases), a => a.toLowerCase() === name.toLowerCase());
     if (name) {
       delete aliases[name];
       multimeter.removeCommand(name);
@@ -55,12 +55,12 @@ module.exports = function(multimeter) {
   }
 
   function commandAddAlias(args) {
-    if (args.length == 0) {
+    if (args.length === 0) {
       multimeter.log("See /help alias for usage.");
-    } else if (args.length == 1) {
+    } else if (args.length === 1) {
       let alias = _.find(
         aliases,
-        (_, k) => k.toLowerCase() == args[0].toLowerCase(),
+        (_, k) => k.toLowerCase() === args[0].toLowerCase(),
       );
       if (alias) {
         multimeter.log(args[0] + " is aliased to: " + alias);
@@ -79,8 +79,8 @@ module.exports = function(multimeter) {
     let substituted = aliases[command].replace(
       /\$(\*)?(\$|args\b|\d+\b)/g,
       (_, raw, name) => {
-        if (name == "$") return "$";
-        if (name == "args") return JSON.stringify(args.join(" "));
+        if (name === "$") return "$";
+        if (name === "args") return JSON.stringify(args.join(" "));
         let arg = args[parseInt(name, 10) - 1];
         return arg ? (raw ? arg.toString() : JSON.stringify(arg)) : "void(0)";
       },
@@ -94,7 +94,7 @@ module.exports = function(multimeter) {
     if (args.length > 0) {
       label = 'aliases containing "' + args[0] + '"';
       matched = _.keys(aliases).filter(
-        name => name.toLowerCase().indexOf(args[0].toLowerCase()) != -1,
+        name => name.toLowerCase().indexOf(args[0].toLowerCase()) !== -1,
       );
     } else {
       matched = _.keys(aliases);
@@ -120,7 +120,7 @@ module.exports = function(multimeter) {
   }
 
   function commandDelAlias(args) {
-    if (args.length == 0) {
+    if (args.length === 0) {
       multimeter.log("See /help alias for usage.");
     } else {
       if (delAlias(args[0])) {

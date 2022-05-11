@@ -93,13 +93,13 @@ module.exports = class Console extends blessed.element {
     } else if (event.formatted) {
       if (shardText) shardText += " ";
       this.outputView.log(shardText + line + "{/}");
-    } else if (type == "system") {
+    } else if (type === "system") {
       this.outputView.log("{bold}*** " + line + "{/}");
-    } else if (type == "console") {
+    } else if (type === "console") {
       this.outputView.log(shardText + "<<< " + line + "{/}");
-    } else if (type == "result") {
+    } else if (type === "result") {
       this.outputView.log(shardText + ">>> " + line + "{/}");
-    } else if (type == "error") {
+    } else if (type === "error") {
       this.outputView.log("{red-fg}{bold}!!!{/bold} " + line + "{/}");
     } else {
       this.outputView.log("  - " + line + "{/}");

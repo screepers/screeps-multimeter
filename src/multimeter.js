@@ -212,7 +212,7 @@ module.exports = class Multimeter extends EventEmitter {
 
   async connect(serverName) {
     serverName = serverName || this.configManager.serverName;
-    if (serverName != this.configManager.serverName) {
+    if (serverName !== this.configManager.serverName) {
       await this.configManager.loadConfig(serverName);
       if (this.api) {
         this.disconnect();
@@ -315,7 +315,7 @@ module.exports = class Multimeter extends EventEmitter {
 
   /// Interpret command as if the user had typed it in the console.
   handleConsoleLine(command) {
-    if (command[0] == "/") {
+    if (command[0] === "/") {
       command = command.trim();
       if (command.match(/^\/shard[0-9]+$/)) {
         command = '/shard ' + command.slice(6);
@@ -335,11 +335,11 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   handleComplete(line) {
-    if (line[0] == "/") {
+    if (line[0] === "/") {
       let prefix = line.slice(1).toLowerCase();
       let options = _.filter(
         Object.keys(this.commands),
-        k => prefix == k.slice(0, prefix.length),
+        k => prefix === k.slice(0, prefix.length),
       );
       return [options.map(l => "/" + l), line];
     } else {
@@ -447,7 +447,7 @@ module.exports = class Multimeter extends EventEmitter {
   }
 
   log() {
-    var message = util.format.apply(null, arguments);
+    const message = util.format.apply(null, arguments);
     this.console.addLines("system", message);
   }
 };

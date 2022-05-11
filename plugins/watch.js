@@ -38,12 +38,12 @@ module.exports = function(multimeter) {
   }
 
   function subscribe(shard, name) {
-    if (name == "console") return;
+    if (name === "console") return;
     let endpoint = getMemoryPath(shard, name);
     if (subscriptions.has(endpoint)) return;
     subscriptions.add(endpoint);
     multimeter.api.socket.subscribe(endpoint);
-    if (name == "status") {
+    if (name === "status") {
       statusValues[shard] = '';
       updateStatusBar();
       multimeter.api.socket.on(endpoint, ({data}) => {
@@ -56,9 +56,9 @@ module.exports = function(multimeter) {
   }
 
   function unsubscribe(shard, name) {
-    if (name == "console") return;
+    if (name === "console") return;
     let endpoint = getMemoryPath(shard, name);
-    if (name == "status") {
+    if (name === "status") {
       delete statusValues[shard];
       updateStatusBar();
     }
@@ -144,7 +144,7 @@ module.exports = function(multimeter) {
 
   function commandWatch(args) {
     let target = args[0] || "console";
-    if (target != "console" && target != "status") {
+    if (target !== "console" && target !== "status") {
       multimeter.log("Valid targets are 'console' and 'status'.");
     }
     let shard = multimeter.shard;
@@ -161,7 +161,7 @@ module.exports = function(multimeter) {
           }
         })
         .catch(errorHandler);
-    } else if (args[1] == "off") {
+    } else if (args[1] === "off") {
       setWatch(target, null)
         .then(() => {
           multimeter.log(target + " watch disabled for " + shard + ".");

@@ -7,7 +7,7 @@ module.exports = function(multimeter) {
   let paused = false;
 
   multimeter.console.on("addLines", function(event) {
-    if (paused && event.type == "log") {
+    if (paused && event.type === "log") {
       event.skip = true;
     }
   });

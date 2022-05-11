@@ -16,7 +16,7 @@ module.exports = function(multimeter) {
         event.skip = true;
         return;
       }
-      if (event.type == "log") {
+      if (event.type === "log") {
         event.line = processLogLine(event.line);
         event.formatted = true;
       }
@@ -40,6 +40,6 @@ function processLogLine(line) {
       attrs[k] = v;
     });
   }
-  if (tag == "log") line = colors[attrs.severity || 3] + line;
+  if (tag === "log") line = colors[attrs.severity || 3] + line;
   return line;
 }

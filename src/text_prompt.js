@@ -53,12 +53,12 @@ module.exports = class TextPrompt extends blessed.box {
         if (buffer.length < pos + target.length) {
           return false;
         }
-        return buffer.compare(target, 0, target.length, pos, pos + target.length) == 0;
+        return buffer.compare(target, 0, target.length, pos, pos + target.length) === 0;
       }
 
       // Flush any input between rawStart and pos, setting rawStart to pos
       function flush() {
-        if (rawStart == 0 && pos == buffer.length) {
+        if (rawStart === 0 && pos === buffer.length) {
           rl_input.push(buffer);
         } else if (pos > rawStart) {
           rl_input.push(buffer.slice(rawStart, pos));
@@ -75,7 +75,7 @@ module.exports = class TextPrompt extends blessed.box {
 
       while (pos < buffer.length) {
         let index = buffer.indexOf(ESCAPE, pos);
-        if (index == -1) {
+        if (index === -1) {
           pos = buffer.length;
           break;
         }
@@ -142,7 +142,7 @@ module.exports = class TextPrompt extends blessed.box {
 
     // Horizontal scrolling for long input lines
     let hscroll = Math.max(0, cx - (pos.aleft + pos.width - 1));
-    if (hscroll != this.hscroll) {
+    if (hscroll !== this.hscroll) {
       this.hscroll = hscroll;
       this.updateDisplay();
       this.screen.render();
@@ -183,7 +183,7 @@ module.exports = class TextPrompt extends blessed.box {
   }
 
   _appendHistory(line) {
-    if (line.length > 0 && line[0] != " ") {
+    if (line.length > 0 && line[0] !== " ") {
       this._historyWriter = this._historyWriter.then(
         f => (f ? fs.write(f, line + "\n", null, "utf-8").then(() => f) : null),
       );
