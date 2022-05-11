@@ -90,9 +90,6 @@ module.exports = class Console extends blessed.element {
 
     if (event.skip) {
       return;
-    } else if (event.formatted) {
-      if (shardText) shardText += " ";
-      this.outputView.log(shardText + line + "{/}");
     } else if (type === "system") {
       this.outputView.log("{bold}*** " + line + "{/}");
     } else if (type === "console") {
@@ -102,7 +99,8 @@ module.exports = class Console extends blessed.element {
     } else if (type === "error") {
       this.outputView.log("{red-fg}{bold}!!!{/bold} " + line + "{/}");
     } else {
-      this.outputView.log("  - " + line + "{/}");
+      if (shardText) shardText += " ";
+      this.outputView.log(shardText + line + "{/}");
     }
   }
 

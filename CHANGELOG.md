@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- Fixed missing '>>>' prefix for result messages
+
 ## [2.1.0] - 2021-11-22
 
 - New feature: Allow passing the token via `SCREEPS_TOKEN` environment variable (thanks @matheusvellone)
