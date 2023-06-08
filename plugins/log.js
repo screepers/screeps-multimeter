@@ -9,7 +9,8 @@ module.exports = function(multimeter) {
   const errorLogFile = fs.createWriteStream(errorLog, { flags: "a" });
 
   multimeter.console.on("addLines", function(event) {
-    const msg = new Date().toISOString() + ": " + event.line + "\n";
+    const shard = event.shard ? `[${event.shard}] ` : '';
+    const msg = new Date().toISOString() + ": " + shard + event.line + "\n";
     if (event.type === "log") {
       logFile.write(msg);
     } else if (event.type === "error") {
