@@ -30,7 +30,6 @@
     "lodash": "^4.17.21",
     "mz": "^2.6.0",
     "parse5": "^6.0.1",
-    "prettier": "^1.14.3",
     "printf": "^0.6.1",
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
@@ -40,6 +39,7 @@
     "yaml": "^2.0.0-5"
   },
   "devDependencies": {
+    "prettier": "^1.14.3",
     "mocha": "^8.4.0"
   }
 }
