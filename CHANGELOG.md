@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 - Fixed missing '>>>' prefix for result messages
+- Added shard name to multimeter.log output
+- Moved prettier to devDependencies where it belongs
 
 ## [2.1.0] - 2021-11-22
 
