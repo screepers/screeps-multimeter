@@ -76,7 +76,11 @@ module.exports = class Console extends blessed.element {
     this.emit("addLines", event);
     line = event.line || line;
     let shardText = "";
-    if (shard) shardText = "{grey-fg}" + shard + "{/}";
+    let indent = "";
+    if (shard) {
+      shardText = "{grey-fg}" + shard + "{/}";
+      indent = shard.replace(/./g, ' ');
+    }
     const TABSIZE = 8; // screeps web console is 8 spaces
     line = line.split("\n").map(line => {
       // Convert tabs here so we can align the correctly
@@ -86,7 +90,7 @@ module.exports = class Console extends blessed.element {
         inserted += count - 1;
         return ' '.repeat(count);
       });
-    }).join("\n    ");
+    }).join(`\n${indent} `);
 
     if (event.skip) {
       return;

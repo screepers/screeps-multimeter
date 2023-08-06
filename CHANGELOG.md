@@ -5,6 +5,7 @@
 - Fixed missing '>>>' prefix for result messages
 - Added shard name to multimeter.log output
 - Moved prettier to devDependencies where it belongs
+- Align continuation lines correctly accounting for shard name prefix
 
 ## [2.1.0] - 2021-11-22
 
