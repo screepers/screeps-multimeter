@@ -1,5 +1,5 @@
 const readline = require("readline");
-const fs = require("mz/fs");
+const fs = require("fs/promises");
 const blessed = require("blessed");
 const { Readable, Writable } = require("stream");
 
@@ -20,10 +20,9 @@ module.exports = class TextPrompt extends blessed.box {
     this.screen._listenKeys(this);
 
     if (opts.historyFile) {
-      this._historyWriter = Promise.resolve(fs.open(opts.historyFile, "a"));
       this._loadHistory(opts.historyFile);
     } else {
-      this._historyWriter = Promise.resolve(null);
+      this._historyWriter = null;
     }
 
     let rl_input = new Readable(),
@@ -172,21 +171,19 @@ module.exports = class TextPrompt extends blessed.box {
     }
   }
 
-  _loadHistory(filename) {
-    fs.readFile(filename, "utf-8").then(
-      data =>
-        (this.rl.history = data
+  async _loadHistory(filename) {
+    const data = await fs.readFile(filename, "utf-8");
+    this.rl.history = data
           .split("\n")
           .filter(l => l.length > 0)
-          .reverse()),
-    );
+          .reverse();
+    this._historyWriter = await fs.open(filename, "a");
   }
 
   _appendHistory(line) {
-    if (line.length > 0 && line[0] !== " ") {
-      this._historyWriter = this._historyWriter.then(
-        f => (f ? fs.write(f, line + "\n", null, "utf-8").then(() => f) : null),
-      );
-    }
+    if (!this._historyWriter) return;
+    if (line.length === 0 || line[0] === " ") return;
+
+    this._historyWriter.write(line + "\n", null, "utf-8");
   }
 };

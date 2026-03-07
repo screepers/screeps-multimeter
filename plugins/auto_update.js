@@ -1,4 +1,3 @@
-const fs = require("mz/fs");
 const rp = require("request-promise-native");
 const _ = require("lodash");
 const semver = require("semver");

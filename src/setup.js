@@ -1,7 +1,7 @@
 const blessed = require("blessed");
 const UnifiedConfig = require('./UnifiedConfig');
 const homedir = require("homedir");
-const fs = require('mz/fs');
+const fs = require('fs/promises');
 const path = require("path");
 
 const DIALOG_LABEL = " {blue-fg}Multimeter Config{/blue-fg} ";
@@ -118,7 +118,7 @@ module.exports = async function(serverName) {
       let newPath = '.screeps.yaml';
       await message(`Found legacy config file ${legacyPath}.\nI will now convert this to the new unified config file ${newPath}.\n\nPress Ctrl-C to exit or any other key to continue.`);
       await umc.createConfig(newPath, legacyConfig);
-      fs.unlinkSync(legacyPath);
+      await fs.unlink(legacyPath);
     }
   } finally {
     if (screen) {
