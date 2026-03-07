@@ -10,7 +10,7 @@ const path = require("path");
 const util = require("util");
 const dotenv = require("dotenv");
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const MOTD = "Now showing Screeps console. Type /help for help.";
 const BUILTIN_PLUGINS = [
