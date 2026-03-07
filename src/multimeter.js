@@ -8,6 +8,9 @@ const EventEmitter = require("events");
 const require_relative = require("require-relative");
 const path = require("path");
 const util = require("util");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const MOTD = "Now showing Screeps console. Type /help for help.";
 const BUILTIN_PLUGINS = [
