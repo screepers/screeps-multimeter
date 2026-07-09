@@ -308,7 +308,8 @@ module.exports = class Multimeter extends EventEmitter {
       module(this);
     });
     _.each(this.config.plugins, name => {
-      const module = require_relative(name, this.configManager.filename);
+      const resolved = path.dirname(path.resolve(this.configManager.filename));
+      const module = require_relative(name, resolved);
       module(this);
     });
   }
