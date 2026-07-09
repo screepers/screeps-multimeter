@@ -30,8 +30,6 @@
     "lodash": "^4.17.21",
     "parse5": "^8.0.1",
     "printf": "^0.6.1",
-    "request": "^2.79.0",
-    "request-promise-native": "^1.0.3",
     "require-relative": "^0.8.7",
     "screeps-api": "^1.16.0",
     "semver": "^7.8.5",
