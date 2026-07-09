@@ -40,6 +40,6 @@
   },
   "devDependencies": {
     "mocha": "^11.7.6",
-    "prettier": "^1.14.3"
+    "prettier": "^3.9.4"
   }
 }
