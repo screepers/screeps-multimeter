@@ -39,7 +39,7 @@
     "yaml": "^2.0.0-5"
   },
   "devDependencies": {
-    "mocha": "^8.4.0",
+    "mocha": "^11.7.6",
     "prettier": "^1.14.3"
   }
 }
