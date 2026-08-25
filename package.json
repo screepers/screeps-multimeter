@@ -23,6 +23,15 @@
     "url": "https://github.com/screepers/screeps-multimeter/issues"
   },
   "homepage": "https://github.com/screepers/screeps-multimeter#readme",
+  "files": [
+    "CHANGELOG.md",
+    "bin",
+    "doc",
+    "lib",
+    "plugins",
+    "src",
+    "test"
+  ],
   "dependencies": {
     "blessed": "^0.1.81",
     "dashdash": "^2.0.0",
