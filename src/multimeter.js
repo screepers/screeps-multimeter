@@ -1,4 +1,4 @@
-const { ScreepsAPI } = require("screeps-api");
+const { ScreepsHttpClient } = require("screeps-api");
 const blessed = require("blessed");
 const configManager = require("../src/config_manager");
 const printf = require("printf");
@@ -222,7 +222,7 @@ module.exports = class Multimeter extends EventEmitter {
     this.config = this.configManager.config;
 
     this.console.log(`Connecting to ${serverName}...`);
-    this.api = await ScreepsAPI.fromConfig(serverName);
+    this.api = await ScreepsHttpClient.fromConfig(serverName);
 
     // Automatically detect available shards
     let userInfo = await this.api.me();

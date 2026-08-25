@@ -71,8 +71,7 @@ module.exports = function(multimeter) {
   }
 
   function getWatchExpressions(shard) {
-    return multimeter.api.memory
-      .get("watch", shard)
+    return multimeter.api.userMemoryGet("watch", shard)
       .then(val => {
         if (val) {
           if (val.data && val.data.expressions) {
