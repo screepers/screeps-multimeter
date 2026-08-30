@@ -1,11 +1,13 @@
 const blessed = require('blessed');
-const UnifiedConfig = require('./UnifiedConfig');
+const { ScreepsConfigManager } = require('screeps-api');
+const configManager = require('./config_manager');
 const homedir = require('homedir');
 const fs = require('fs/promises');
 const path = require('path');
 
 const DIALOG_LABEL = ' {blue-fg}Multimeter Config{/blue-fg} ';
 
+const scm = new ScreepsConfigManager();
 let screen = null;
 
 function message(message) {
@@ -85,7 +87,6 @@ async function loadLegacyConfig() {
 }
 
 module.exports = async function () {
-    let umc = new UnifiedConfig();
     let [legacyPath, legacyConfig] = await loadLegacyConfig();
 
     if (!legacyPath) {
@@ -103,9 +104,9 @@ module.exports = async function () {
             process.exit(1);
         });
 
-        let newConfig = await umc.getConfig();
-        if (newConfig) {
-            let newPath = umc.path;
+        let newPath = await configManager.findConfigFile();
+        if (newPath) {
+            let newConfig = await scm.loadFile(newPath);
             if (newConfig.configs && newConfig.configs.multimeter) {
                 await message(
                     `Found legacy config file ${legacyPath}.\nYou already have a unified config file (${newPath}) with a multimeter section.\nYou will need to resolve this conflict manually and delete the legacy config file.\n\nPress any key to exit.`,
@@ -115,18 +116,21 @@ module.exports = async function () {
                 await message(
                     `Found legacy config file ${legacyPath}.\nYou already have a unified config file (${newPath}).\nI will now copy the multimeter-specific settings into this file.\n\nPress Ctrl-C to exit or any other key to continue.`,
                 );
-                await umc.saveConfig(newPath, legacyConfig);
+                await configManager.mergeMultimeterConfig(
+                    newPath,
+                    legacyConfig,
+                );
                 await message(
                     `Successfully merged multimeter config. Please verify the server config and delete the legacy config file.\n\nPress any key to exit.`,
                 );
                 process.exit(0);
             }
         } else {
-            let newPath = '.screeps.yaml';
+            newPath = '.screeps.yaml';
             await message(
                 `Found legacy config file ${legacyPath}.\nI will now convert this to the new unified config file ${newPath}.\n\nPress Ctrl-C to exit or any other key to continue.`,
             );
-            await umc.createConfig(newPath, legacyConfig);
+            await configManager.createConfig(newPath, legacyConfig);
             await fs.unlink(legacyPath);
         }
     } finally {

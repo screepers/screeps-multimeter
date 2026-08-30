@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- Replaced local UnifiedConfig with screeps-api's ScreepsConfigManager
+
 ## [2.3.0] - 2026-08-25
 
 - Update to screeps-api 2.x

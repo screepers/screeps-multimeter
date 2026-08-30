@@ -223,8 +223,21 @@ module.exports = class Multimeter extends EventEmitter {
         }
         this.config = this.configManager.config;
 
-        this.console.log(`Connecting to ${serverName}...`);
-        this.api = await ScreepsHttpClient.fromConfig(serverName);
+        this.api = await ScreepsHttpClient.fromConfig(serverName, {
+            app: 'multimeter',
+            file: this.configManager.filename,
+        });
+
+        if (!this.config.server.token && process.env.SCREEPS_TOKEN) {
+            await this.api.setServer({
+                ...this.config.server,
+                token: process.env.SCREEPS_TOKEN,
+            });
+        }
+
+        this.console.log(
+            `Connecting to ${serverName} (${this.api.server.url}) ...`,
+        );
 
         // Automatically detect available shards
         let userInfo = await this.api.me();
