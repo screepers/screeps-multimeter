@@ -183,7 +183,12 @@ module.exports = class TextPrompt extends blessed.box {
     }
 
     async _loadHistory(filename) {
-        const data = await fs.readFile(filename, 'utf-8');
+        let data = '';
+        try {
+            data = await fs.readFile(filename, 'utf-8');
+        } catch (err) {
+            if (err.code !== 'ENOENT') throw err;
+        }
         this.rl.history = data
             .split('\n')
             .filter((l) => l.length > 0)
