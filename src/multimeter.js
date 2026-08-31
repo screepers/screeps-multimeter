@@ -38,7 +38,7 @@ class Gauges extends blessed.layout {
             parent: this,
             top: 0,
             height: 1,
-            width: '50%',
+            width: '40%',
             style: { inverse: true },
         });
 
@@ -46,7 +46,15 @@ class Gauges extends blessed.layout {
             parent: this,
             top: 0,
             height: 1,
-            width: '50%',
+            width: '40%',
+            style: { inverse: true },
+        });
+
+        let tick_box = blessed.box({
+            parent: this,
+            top: 0,
+            height: 1,
+            width: '20%',
             style: { inverse: true },
         });
 
@@ -89,6 +97,16 @@ class Gauges extends blessed.layout {
             bch: ' ',
             style: { inverse: true, bar: { inverse: true } },
         });
+
+        this.tickLabel = blessed.text({
+            parent: tick_box,
+            top: 0,
+            left: 0,
+            height: 1,
+            width: 14,
+            content: 'Tick: ...',
+            style: { inverse: true },
+        });
     }
 
     update(cpu_current, cpu_limit, mem_current, mem_limit) {
@@ -107,9 +125,16 @@ class Gauges extends blessed.layout {
         this.memBar.setProgress((mem_current / mem_limit) * 100);
         this.screen.render();
     }
+
+    updateTick(tick) {
+        this.tickLabel.setContent(`Tick: ${tick || '...'}`);
+        this.screen.render();
+    }
 }
 
 module.exports = class Multimeter extends EventEmitter {
+    _shard;
+
     constructor(configManager) {
         super();
         this.configManager = configManager;
@@ -118,7 +143,7 @@ module.exports = class Multimeter extends EventEmitter {
         this.cpuLimit = 1;
         this.memoryLimit = 2097152;
         this.statusHandlers = [];
-        this.shard = '';
+        this._shard = '';
         this.shards = [];
 
         this.addCommand('help', {
@@ -245,14 +270,11 @@ module.exports = class Multimeter extends EventEmitter {
                 shards,
                 (shard) => userInfo.cpuShard[shard] > 0,
             );
-            this.console.setShard(this.shard);
         } else {
             // Private server (no shard names)
             // NOTE: Uses a different memory path with the shard name omitted entirely
             this.shard = '';
             this.shards = [''];
-            // Show server name instead
-            this.console.setShard(`[${serverName}]`);
         }
 
         this.api.socket.subscribe('console', (event) => {
@@ -275,6 +297,7 @@ module.exports = class Multimeter extends EventEmitter {
                 this.cpuLimit,
                 data.memory,
                 this.memoryLimit,
+                this.tick,
             );
         });
 
@@ -293,6 +316,42 @@ module.exports = class Multimeter extends EventEmitter {
                 this.memLimit = 2097152;
             });
         });
+    }
+
+    get shard() {
+        return this._shard;
+    }
+
+    set shard(shard) {
+        const oldShard = this._shard;
+        this._shard = shard;
+
+        // Single-shard server, show server name instead
+        this.console.setShard(
+            shard !== '' ? shard : `[${this.configManager.serverName}]`,
+        );
+        this.registerTickListener(oldShard);
+    }
+
+    async registerTickListener(oldShard) {
+        const oldSub = oldShard !== '' ? `room:${oldShard}/W1N1` : 'room:W1N1';
+        const newSub =
+            this.shard !== '' ? `room:${this.shard}/W1N1` : 'room:W1N1';
+        if (oldSub === newSub) return;
+        await this.api.socket.unsubscribe(oldSub);
+        this.console.addLines(
+            'system',
+            `unregistering old: ${oldSub}, ${JSON.stringify(this.api.socket.__subs)}`,
+        );
+        await this.api.socket.subscribe(newSub, (event) => {
+            var { data } = event;
+            this.console.addLines('system', `tick event: ${data.gameTime}`);
+            this.gauges.updateTick(data.gameTime);
+        });
+        this.console.addLines(
+            'system',
+            `registering new: ${newSub}, ${JSON.stringify(this.api.socket.__subs)}`,
+        );
     }
 
     disconnect() {
