@@ -167,7 +167,7 @@ Tags may be nested:
 
 ### Plugin: Logging
 
-The logging plugin allows you to log screeps output and error output to a file. To enable logging, add logging to your config file:
+The logging plugin allows you to log screeps output and error output to a file. To enable logging, set `logFilename` and/or `errorLogFilename` in your config file:
 
 ```
 configs:
@@ -175,7 +175,15 @@ configs:
     logFilename: "multimeter.log"
 ```
 
-To log errors to a separate file, add this to your multimeter config as well:
+`${server}` in the filename is replaced with the current server name from `.screeps.yaml` (the same name used with `--server` / `/server`). The log file is reopened when you switch servers:
+
+```
+configs:
+  multimeter:
+    logFilename: "multimeter-${server}.log"
+```
+
+To log errors to a separate file (or to log only errors), set `errorLogFilename`:
 
 ```
 configs:

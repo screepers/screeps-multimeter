@@ -215,13 +215,17 @@ module.exports = class Multimeter extends EventEmitter {
 
     async connect(serverName) {
         serverName = serverName || this.configManager.serverName;
-        if (serverName !== this.configManager.serverName) {
+        const previousServer = this.configManager.serverName;
+        if (serverName !== previousServer) {
             await this.configManager.loadConfig(serverName);
             if (this.api) {
                 this.disconnect();
             }
         }
         this.config = this.configManager.config;
+        if (serverName !== previousServer) {
+            this.emit('server', serverName);
+        }
 
         this.console.log(`Connecting to ${serverName}...`);
         this.api = await ScreepsHttpClient.fromConfig(serverName);
