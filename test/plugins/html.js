@@ -76,4 +76,30 @@ describe('html plugin', function () {
       'result'
     );
   });
+
+  it('should convert CSS named colors that blessed does not support to hex', function () {
+    compare(
+      'A<span style="color:orange">B</span>C',
+      'A{#ffa500-fg}B{/#ffa500-fg}C',
+    );
+    compare(
+      'A<font color="orange">B</font>C',
+      'A{#ffa500-fg}B{/#ffa500-fg}C',
+    );
+    compare(
+      'A<span style="background:purple">B</span>C',
+      'A{#800080-bg}B{/#800080-bg}C',
+    );
+    compare(
+      'A<span style="color:Orange">B</span>C',
+      'A{#ffa500-fg}B{/#ffa500-fg}C',
+    );
+  });
+
+  it('should convert rgb() colors to hex', function () {
+    compare(
+      'A<span style="color: rgb(255, 165, 0)">B</span>C',
+      'A{#ffa500-fg}B{/#ffa500-fg}C',
+    );
+  });
 });
